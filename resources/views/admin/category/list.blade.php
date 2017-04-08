@@ -28,7 +28,7 @@
 	                               <td>{{ $category->category_id }}</td>
 	                               <td>{{ $category->category_name }}</td>
 	                               <td>
-	                                   <a href="{{ url('admin/category/modify') }}" class="btn btn-info">
+	                                   <a href="{{ url('admin/category/modify').'/'.$category->category_id }}" class="btn btn-info">
 	                                       编辑
 	                                   </a>
 	                                   <a onclick="Delete('{{ $category->category_id }}')" class="btn btn-danger">

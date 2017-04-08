@@ -1,17 +1,20 @@
 @extends('layouts.app')
 
+@section('title', '最新文章')
+
 @section('content')
 <div class="container">
-    <div class="row">
-        <div class="col-md-8 col-md-offset-2">
-            <div class="panel panel-default">
-                <div class="panel-heading">0.0</div>
-
-                <div class="panel-body">
-                    已登入
-                </div>
-            </div>
+    @foreach($articles as $article)
+    <a href="{{ url('article').'/'.$article->article_id }}" class="panel panel-default">
+        <div class="panel-heading">{{ $article->article_title }}</div>
+        <div class="panel-body">
+            @if($article->article_cover_url)
+                <img src="{{ asset($article->article_cover_url) }}"
+                     style="max-height: 60px">
+            @endif
+            {{ $article->article_content }}
         </div>
-    </div>
+    </a><hr>
+    @endforeach
 </div>
 @endsection

@@ -16,3 +16,21 @@ use Illuminate\Http\Request;
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:api');
+
+// 地区
+Route::get('/areas', function () {
+
+	$provinces 	= \DB::table('dict_provinces')->get();
+	$cities 	= \DB::table('dict_cities')->get();
+	$areas 		= \DB::table('dict_areas')->get();
+
+	return [
+		'provinces' => $provinces,
+		'cities' => $cities,
+		'areas' => $areas
+	];
+});
+
+Route::group(['middleware' => 'auth'], function () {
+	
+});

@@ -45,19 +45,19 @@
             <div class="form-group col-md-2">
                 <label>省</label>
                 <select class="form-control" name="province_id">
-                    <option value="">广东省</option>
+                    <option value="1">广东省</option>
                 </select>
             </div>
             <div class="form-group col-md-2">
                 <label>市</label>
                 <select class="form-control" name="city_id">
-                    <option value="">深圳市</option>
+                    <option value="1">深圳市</option>
                 </select>
             </div>
             <div class="form-group col-md-2">
                 <label>区</label>
                 <select class="form-control" name="area_id">
-                    <option value="">南山区</option>
+                    <option value="1">南山区</option>
                 </select>
             </div>
 
@@ -67,7 +67,7 @@
             </div>
             <div class="form-group col-md-10">
                 <label>封面url</label>
-                <input type="text" id="image_url" name="article_cover" class="form-control">
+                <input type="text" id="image_url" name="article_cover_url" class="form-control">
             </div>
             <div class="form-group col-md-12">
                 <img id="image_view" src="" style="max-height: 300px">

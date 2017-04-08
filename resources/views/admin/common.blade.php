@@ -50,6 +50,13 @@
                             <p>文章创建</p>
                         </a>
                     </li>
+
+                    <li>
+                        <a href="{{ url('admin/affair/list') }}">
+                            <i class="pe-7s-note2"></i> 
+                            <p>事务列表</p>
+                        </a>
+                    </li>
                     <li>
                         <a href="{{ url('admin/category/list') }}">
                             <i class="pe-7s-note2"></i> 
@@ -86,7 +93,7 @@
                                 </a>
                             </li>
                             <li>
-                                <a href="">
+                                <a onclick="Search($(this))">
                                     <i class="fa fa-search"></i>
                                 </a>
                             </li>
@@ -174,6 +181,12 @@
                 }
             })
         }
+    }
+
+    // 搜索文章
+    function Search(_this) {
+        var search_text = _this.parent('li').prev('li').find('input').val()
+        window.location.href = "{{ url('admin/article/list') }}?search_text=" + search_text;
     }
     $(function(){
         if ($('#file_upload') != undefined) {

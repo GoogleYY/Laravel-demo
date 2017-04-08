@@ -23,33 +23,49 @@ Route::get('/', function () {
 // 找回密码
 Auth::routes();
 
-// 接口路由
-Route::group(['prefix' => 'api'], function () {
-	// 地区
-	Route::get('areas', function () {
+// 文章
+Route::group(['prefix' => 'article'], function ($router) {
+	// 列表
+	$router->get('/', 'HomeController@articleList');
+	// 详情
+	$router->get('/{id}', 'HomeController@articleDetail');
 
-		$provinces 	= \DB::table('dict_provinces')->get();
-		$cities 	= \DB::table('dict_cities')->get();
-		$areas 		= \DB::table('dict_areas')->get();
+	// 评论列表
+	$router->get('/comments/{id}', 'HomeController@commentList');
 
-		return [
-			'provinces' => $provinces,
-			'cities' => $cities,
-			'areas' => $areas
-		];
-	});
+	$router->post('/comment', 'HomeController@commentPost');
+
+	$router->post('/comment/forward', 'HomeController@commentForwardPost');
 });
 
 // 已登入路由组
 Route::group(['middleware' => ['auth']], function ($router) {
-	$router->get('/home', 'HomeController@index');
+	// $router->get('/home', 'HomeController@index');
 
-	// 
-	$router->get('/index', function (){
-		return view('abc');
-	});
+	// 用户个人中心
+	$router->get('user/info', 'HomeController@personal');
 
+	// 文章收藏
+	$router->match(['post', 'delete'], 'api/article/collect', 'HomeController@articleCollect');
+
+	// 文章评论
+	$router->get('article/comment/{id}', 'HomeController@commentRedirect');
+
+	// 事务
+	$router->get('user/affairs', 'HomeController@affairList');
+
+	$router->get('user/affair/create', 'HomeController@affairCreateView');
+
+	$router->get('user/affair/edit/{id}', 'HomeController@affairEditView');
+
+	$router->get('user/affair/{id}', 'HomeController@affairDetailView');
 });
+// 取消
+$router->post('user/affairs/{id}/cancel', 'HomeController@affairCancel');
+// 保存草稿
+$router->post('user/affairs/save', 'HomeController@affairCreateSave');
+// 提交
+$router->post('user/affairs/create', 'HomeController@affairCreatePost');
 
 /////////// 后台 ////////////////
 
@@ -87,6 +103,17 @@ Route::group(['prefix' => 'admin','namespace' => 'Admin'], function ($router) {
 
 			// 删除
 			$router->post('delete/{id}', 'DashboardController@articleDelete');
+		});
+
+		// 事物管理
+		Route::group(['prefix' => 'affair'], function ($router) {
+			// 事务列表
+			Route::get('list', 'DashboardController@affairList');
+
+			// 处理视图
+			Route::get('hiddle/{id}', 'DashboardController@affairHandleView');
+
+			Route::post('hiddle/{id}', 'DashboardController@affairHandlePost');
 		});
 
 		// 分类管理

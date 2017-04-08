@@ -9,6 +9,8 @@ class Kernel extends HttpKernel
     /**
      * The application's global HTTP middleware stack.
      *
+     * 全局中间件 任何一条路由都会被应用这些中间件
+     *
      * These middleware are run during every request to your application.
      *
      * @var array

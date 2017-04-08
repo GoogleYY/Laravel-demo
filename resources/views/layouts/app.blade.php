@@ -8,7 +8,7 @@
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'Community') }}</title>
+    <title>@yield('title')</title>
 
     <!-- Styles -->
     <!-- <link href="/css/app.css" rel="stylesheet"> -->
@@ -59,17 +59,18 @@
                                     {{ Auth::user()->name }} <span class="caret"></span>
                                 </a>
 
-                                <ul class="dropdown-menu" role="menu">
+                                <ul class="dropdown-menu">
                                     <li>
-                                        <a href="{{ url('/logout') }}"
-                                            onclick="event.preventDefault();
-                                                     document.getElementById('logout-form').submit();">
-                                            退出
-                                        </a>
-
-                                        <form id="logout-form" action="{{ url('/logout') }}" method="POST" style="display: none;">
-                                            {{ csrf_field() }}
-                                        </form>
+                                        <a href="{{ url('/user/info') }}">个人中心</a>
+                                    </li>
+                                    <li style="margin-top: 10px">
+                                        <a href="{{ url('user/affairs') }}">代办事项</a>
+                                    </li>
+                                    <li style="margin-top: 10px">
+                                        <a href="{{ url('/password/reset').'/'.Auth::user()->remember_token }}">修改密码</a>
+                                    </li>
+                                    <li style="margin-top: 10px">
+                                        <a href="{{ url('/logout') }}">退出</a>
                                     </li>
                                 </ul>
                             </li>
@@ -81,8 +82,182 @@
 
         @yield('content')
     </div>
-
     <!-- Scripts -->
-    <script src="/js/app.js"></script>
+    <script src="{{ asset('resources/assets/js/jquery.js') }}"></script>
+    <script src="{{ asset('resources/assets/js/bootstrap.min.js') }}"></script>
+    <script type="text/javascript">
+        @if(!empty($isArticleDetail))
+            $(function(){
+                // 收藏 
+                var state = parseInt('{{ $isCollected }}');
+
+                if($('#collect') != undefined) {
+                    $('#collect').on('click', function () {
+                        var _this = $(this)
+                        if (state) {
+                            $.post("{{ url('api/article/collect') }}", {
+                                article_id: '{{ $article->article_id }}',
+                                _token: '{{ csrf_token() }}'
+                            }, function (res) {
+                                if (res.code === 0) {
+                                    _this.html('收藏')
+                                }
+                            })
+                        } else {
+                            $.post("{{ url('api/article/collect') }}", {
+                                article_id: '{{ $article->article_id }}',
+                                _method: 'delete',
+                                _token: '{{ csrf_token() }}'
+                            }, function (res) {
+                                if (res.code === 0) {
+                                    _this.html('已收藏')
+                                }
+                            })
+                        }
+                        state = !state
+                    })
+                }
+
+                commentList();
+                
+                // 发表评论
+                $('#comment').on('click', function () {
+                    if ($('#comment_text').val().length > 5) {
+                        $.post("{{ url('article/comment') }}", {
+                            article_id: "{{ $article->article_id }}",
+                            comment_text: $('#comment_text').val(),
+                            _token: "{{ csrf_token() }}"
+                        }, function (res) {
+                            console.log(res)
+                            $('#comment_container').html('')
+                            commentList()
+                        })
+                    } else {
+                        alert('字数太少')
+                        return false;
+                    }
+                });
+            })
+
+            // 评论列表
+            function commentList() {
+                $.get("{{ url('article/comments').'/'.$article->article_id }}", function (res) {
+                    console.log(res)
+                    var html = ''
+                    for(var i = 0; i < res.length; i++) {
+                        html += `
+                            <li>
+                                <div class="form-group">
+                                    <p class="lead"> ${ res[i].comment_text } </p>
+                                    <div class="form-group clearfix">
+                                        <small class="pull-left"> ${ res[i].name } </small>
+                                        <small class="pull-right"> ${ res[i].comment_created_at } </small>
+                                    </div>
+                                    <input class="form-control" type="text"/>
+                                </div>
+                                <div class="form-group clearfix">
+                                    @if(Auth::check())
+                                        <input type="hidden" value="${ res[i].comment_id }">
+                                        <button class="btn btn-default pull-right" onclick="commentForward($(this))">回复</button>
+                                    @else
+                                        <span class="pull-right">
+                                            请先 <a href="{{ url('/article/comment').'/'.$article->article_id }}">登入</a>
+                                        </span>
+                                    @endif
+                                </div>
+                            `
+                        for (var j = 0, forwards = res[i].forwards; j < forwards.length; j++) {
+                            html += `<hr>
+                                <div class="form-group">
+                                    <p class="lead"> ${ forwards[j].forward_text } </p>
+                                    <div class="form-group clearfix">
+                                        <small class="pull-left"> ${ forwards[j].name } </small>
+                                        <small class="pull-right"> ${ forwards[j].forward_created_at } </small>
+                                    </div>
+                                </div>
+                            `
+                        }
+
+                        html += `</li><hr>`
+                    }
+                    $('#comment_container').append(html)
+                })
+            }
+
+            // 评论回复
+            function commentForward(_this) {
+                var forward_text = _this.parent('div').prev('.form-group').children('input').val();
+                if (forward_text.length > 5) {
+                    $.post("{{ url('article/comment/forward') }}", {
+                        comment_id: _this.prev().val(),
+                        forward_text: forward_text,
+                        _token: "{{ csrf_token() }}"
+                    }, function (res) {
+                        console.log(res)
+                        $('#comment_container').html('')
+                        commentList()
+                    })
+                } else {
+                    alert('字数太少')
+                    return false;
+                }
+            }
+        @endif
+
+        @if(!empty($isAffairCreateView) || !empty($isAffairEditView))
+            // 保存事务
+            var affair_id = null
+            @if(!empty($isAffairEditView))
+                // 事务编辑页
+                affair_id = '{{ $affair->affair_id }}'
+            @endif
+            
+            $('#affair_save').on('click', function () {
+                var affair_title = $('#affair_title').val()
+                var affair_text = $('#affair_text').val()
+
+                if ((affair_title.length > 5) && (affair_text.length > 10)) {
+                    $.post("{{ url('user/affairs/save') }}", {
+                        affair_id: affair_id,
+                        affair_title: affair_title,
+                        affair_text: affair_text,
+                        _token: '{{ csrf_token() }}'
+                    }, function (res) {
+                        console.log(res)
+                        if(res.code === 0) {
+                            window.location.href = "{{ url('user/affairs') }}"
+                        }
+                    })
+
+                } else {
+                    alert('字数太少')
+                    return false
+                }
+            })
+
+            // 提交事务
+            $('#affair_submit').on('click', function () {
+                var affair_title = $('#affair_title').val()
+                var affair_text = $('#affair_text').val()
+                if (affair_title.length > 5 && affair_text.length > 10) {
+                    $.post("{{ url('user/affairs/create') }}", {
+                        affair_title: affair_title,
+                        affair_text: affair_text,
+                        _token: '{{ csrf_token() }}'
+                    }, function (res) {
+                        console.log(res)
+                        if(res.code === 0) {
+                            window.location.href = "{{ url('user/affairs') }}"
+                        }
+                    })
+
+                } else {
+                    alert('字数太少')
+                    return false
+                }
+            })
+        @endif
+
+    </script>
 </body>
 </html>

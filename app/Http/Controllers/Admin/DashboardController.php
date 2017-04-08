@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers\Admin;
 
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+
+use App\Models\Article;
 
 use App\Http\Requests;
 use App\Http\Controllers\Controller;
@@ -27,11 +30,8 @@ class DashboardController extends Controller
     public function articleList()
     {
     	$sql = \DB::table('articles as a')
-			->join('categorys as b', 'a.category_id', '=', 'a.category_id')
-			->leftJoin('dict_provinces as c' ,'a.province_id', '=', 'c.province_id')
-			->leftJoin('dict_cities as d' ,'a.city_id', '=', 'd.city_id')
-			->leftJoin('dict_areas as e' ,'a.area_id', '=', 'e.area_id')
-			->orderBy('a.id', 'desc');
+			->join('categorys as b', 'b.category_id', '=', 'a.category_id')
+			->orderBy('a.article_updated_at', 'desc');
 
 		$articles = null;
 
@@ -40,7 +40,15 @@ class DashboardController extends Controller
 
 		if(!request()->category_id) {
 			// 默认显示全部分类
-			$articles = $sql->paginate(10);
+            if (request()->search_text) {
+                // 搜索
+			     $articles = $sql
+                 ->where('a.article_title', 'like', '%'.request()->search_text.'%')
+                 ->orWhere('a.article_content', 'like', '%'.request()->search_text.'%')
+                 ->paginate(10);
+            } else {
+                $articles = $sql->paginate(10);
+            }
 		} else {
 			// 按分类查看
 			$articles = $sql->where('a.category_id', request()->category_id)->paginate(10);
@@ -65,8 +73,8 @@ class DashboardController extends Controller
             //$tmpName = $file->getRealPath(); //上传后临时文件的绝对路径
             $extension =  $file->getClientOriginalExtension(); //文件后缀
             $newName = date('YmdHis').'.'.$extension;
-            $file->move(base_path().'/uploads', $newName); //移动文件并重命名
-            $filePath = 'uploads/'.$newName;
+            $file->move(base_path().'/resources/assets/img', $newName); //移动文件并重命名
+            $filePath = 'resources/assets/img/'.$newName;
             return $filePath;
         }
     }
@@ -74,26 +82,26 @@ class DashboardController extends Controller
     public function articleCreatePost()
     {
     	$article = request()->except('_token');
+    	//date('Y-m-d H:i:s', time())
+		$article['article_created_at'] = Carbon::now();
+		$article['article_updated_at'] = Carbon::now();
 
-		$article['article_created_at'] = date('Y-m-d H:i:s', time());
-		$article['article_updated_at'] = date('Y-m-d H:i:s', time());
-
-		$rules = [
-        	'article_title' => 'required',
-        	'article_author' => 'required',
-        	'article_content' => 'required'
-        ];
-        $message = [
-        	'article_title.required' => '标题不能为空',
-        	'article_author.required' => '作者不能为空',
-        	'article_content.required' => '内容不能为空',
-        ];
-        $validator = Validator::make($article, $rules, $message);
+        $validator = Validator::make($article, [
+	    		'article_title' => 'required',
+	        	'article_author' => 'required',
+	        	'article_content' => 'required|min:10'
+    		], [
+    			'article_title.required' => '标题不能为空',
+	        	'article_author.required' => '作者不能为空',
+	        	'article_content.required' => '内容不能为空',
+	        	'article_content.min' => '内容太少',
+    		]);
 
         if ($validator->fails()) {
             return back()->withErrors($validator);
         } else {
-			$result = \DB::table('categorys')->insert($article);
+			$result = Article::create($article);
+
 			if($result) {
 				return back()->withErrors('添加成功');
 			} else {
@@ -150,6 +158,30 @@ class DashboardController extends Controller
 			'code' => -1,
 			'msg' => '删除失败'
 		];
+    }
+
+    // 事务管理
+    public function affairList()
+    {
+        $affairs = \DB::table('affairs')
+            ->whereNotIn('affair_status', [1, 4]) // 排除草稿
+            ->paginate(10);
+
+        return view('admin.affair.list', compact('affairs'));
+    }
+
+    public function affairHandleView($id)
+    {
+        $affair = \DB::table('affairs')
+            ->where('affair_id', $id)
+            ->first();
+
+        return view('admin.affair.handle', compact('affair'));
+    }
+
+    public function affairHandlePost()
+    {
+
     }
 
     /***

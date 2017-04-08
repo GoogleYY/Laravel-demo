@@ -31,7 +31,6 @@
               <th>查看次数</th>
               <th>状态</th>
               <th>分类</th>
-              <th>地区</th>
               <th>创建时间</th>
               <th>操作</th>
           </thead>
@@ -41,9 +40,8 @@
                  <td>{{ $article->article_id }}</td>
                  <td>{{ $article->article_title }}</td>
                  <td>{{ $article->article_view_counts }}</td>
-                 <td>{{ $article->article_status }}</td>
-                 <td>{{ $article->article_category_id }}</td>
-                 <td>{{ $article->area_id }}</td>
+                 <td>{{ $article->article_status == 0 ? '正常' : '已删除' }}</td>
+                 <td>{{ $article->category_name }}</td>
                  <td>{{ $article->article_created_at }}</td>
                  <td>
                      <a href="{{ url('admin/article/modify') }}" class="btn btn-info">
