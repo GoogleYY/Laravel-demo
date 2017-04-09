@@ -19,7 +19,7 @@
 		发布时间<span>{{ $article->article_created_at }}</span>
 	</div>
 	<hr>
-	<img src="{{ asset($article->article_cover_url) }}" style="max-width: 100%">
+	<img src="{{ asset($article->article_cover_url) }}" class="pull-left" style="max-width:100%;margin-right:10px;margin-bottom:2px">
 	<p class="lead">{{ $article->article_content }}</p>
 
 	<div class="form-group clearfix">
@@ -34,7 +34,7 @@
 		@else
 			<a class="btn btn-default pull-right" disabled>没有了</a>
 		@endif
-	</div>
+	</div><hr>
 
 	<div class="form-group">
 		<input type="text" id="comment_text" class="form-control">

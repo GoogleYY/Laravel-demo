@@ -24,7 +24,8 @@
 		</div>
 		<div class="form-group clearfix">
 			<div class="pull-right" style="word-spacing:15px">
-				<a href="{{ url('user/affairs') }}" class="btn btn-default">取消</a>
+				<a href="{{ url('user/affairs') }}" class="btn btn-default">回到列表</a>
+				<button class="btn btn-warning" id="affair_cancel">取消</button>
 				<button class="btn btn-info" id="affair_save">保存草稿</button>
 				<button class="btn btn-success" id="affair_submit">提交</button>
 			</div>

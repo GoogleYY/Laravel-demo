@@ -210,7 +210,8 @@ class HomeController extends Controller
     //	1.草稿 
     //	2.申请中 
     //	3.已处理 
-    //	4.已删除
+    //	4.已取消
+    //	5.已删除
     public function affairList()
     {
     	$affairs = Affair::where('user_id', auth()->user()->id)
@@ -220,29 +221,30 @@ class HomeController extends Controller
 
     public function affairDetailView($id)
     {
+    	$isAffairDetailView = true;
+
     	$affair = Affair::where('affair_id', $id)->first();
 
-    	return view('auth.affair.detail', compact('affair'));
+    	return view('auth.affair.detail', compact('affair', 'isAffairDetailView'));
     }
 
-    // 删除 => status: 4.已删除
-    public function affairCancel($id)
+    // 取消 => status: 4.已取消
+    public function affairCancel()
     {
     	$result = Affair::where([
     			['user_id', auth()->user()->id],
-    			['affair_id', $id]
+    			['affair_id', request()->affair_id]
     		])->update([
     			'affair_status' => 4,
-    			'affair_updated_at' => Carbon::now(),
-    			'affair_deleted_at' => Carbon::now()
+    			'affair_updated_at' => Carbon::now()
     		]);
 
 		return $result ? [
 			'code' => 0,
-			'msg' => '删除成功'
+			'msg' => '取消成功'
 		] : [
 			'code' => -1,
-			'msg' => '删除失败'
+			'msg' => '取消失败'
 		];
     }
 
@@ -256,6 +258,7 @@ class HomeController extends Controller
     public function affairEditView($id)
     {
     	$isAffairEditView = true;
+
     	$affair = Affair::where([
     		['user_id', auth()->user()->id],
     		['affair_id', $id]
@@ -271,11 +274,11 @@ class HomeController extends Controller
 
     	$req['user_id'] = auth()->user()->id;
     	$req['affair_status'] = 1;
-    	$req['affair_created_at'] = Carbon::now();
     	$req['affair_updated_at'] = Carbon::now();
 
     	if (!request()->affair_id) {
     		// 新建草稿
+    		$req['affair_created_at'] = Carbon::now();
 	    	$result = Affair::create($req);
     	} else {
     		// 更新草稿
@@ -319,6 +322,27 @@ class HomeController extends Controller
 		] : [
 			'code' => -1,
 			'msg' => '提交失败'
+		];
+    }
+
+    // 事务删除 => status: 5.已删除
+    public function affairDelete()
+    {
+    	$result = Affair::where([
+    			['user_id', auth()->user()->id],
+    			['affair_id', request()->affair_id]
+    		])->update([
+    			'affair_status' => 5,
+    			'affair_updated_at' => Carbon::now(),
+    			'affair_deleted_at' => Carbon::now()
+    		]);
+
+		return $result ? [
+			'code' => 0,
+			'msg' => '删除成功'
+		] : [
+			'code' => -1,
+			'msg' => '删除失败'
 		];
     }
 

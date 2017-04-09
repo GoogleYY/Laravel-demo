@@ -47,7 +47,7 @@
                     <li>
                         <a href="{{ url('admin/article/create') }}">
                             <i class="pe-7s-graph"></i> 
-                            <p>文章创建</p>
+                            <p>添加文章</p>
                         </a>
                     </li>
 
@@ -126,12 +126,8 @@
 
             <div class="content">
                 <div class="container-fluid">
-                    <div class="row">                   
-                        <div class="col-md-12">
-                            <div class="card">
-                                @yield('content')
-                            </div>
-                        </div>
+                    <div class="row">
+                        @yield('content')
                     </div>
                 </div>
             </div>
@@ -159,10 +155,87 @@
 <!-- uploadify -->
 <script src="{{ asset('resources/assets/uploadify/jquery.uploadify.min.js') }}"></script>
 
+<!-- echats -->
+<!-- <script src="{{ asset('resources/assets/js/echarts.simple.min.js') }}"></script> -->
+<script src="https://cdn.bootcss.com/echarts/3.5.0/echarts.common.min.js"></script>
+
 <!-- Light Bootstrap Table DEMO methods, don't include it in your project! -->
 <script src="{{ asset('resources/assets/js/demo.js') }}"></script>
 
 <script type="text/javascript">
+    $(function(){
+        // dashboard 
+        @if(!empty($isHome))
+            var myChart = echarts.init(document.getElementById('main'));
+
+            var article_title = [];
+            var view_counts = [];
+
+            @foreach($articles as $article)
+                article_title.push('{{ $article->article_title }}')
+                view_counts.push('{{ $article->article_view_counts }}')
+            @endforeach
+
+            console.log(view_counts)
+            // 指定图表的配置项和数据
+            var option = {
+                color: ['#3398D3'],
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer : {            // 坐标轴指示器，坐标轴触发有效
+                        type : 'shadow'        // 默认为直线，可选为：'line' | 'shadow'
+                    }
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '3%',
+                    containLabel: true
+                },
+                xAxis : [{
+                    type : 'category',
+                    data : article_title,
+                    axisTick: {
+                        alignWithLabel: true
+                    }
+                }],
+                yAxis: [{
+                    type: 'value'
+                }],
+                series: [{
+                    name: '浏览量',
+                    type: 'bar',
+                    data: view_counts
+                }]
+            };
+
+            // 使用刚指定的配置项和数据显示图表。
+            myChart.setOption(option);
+        @endif
+
+        if ($('#file_upload') != undefined) {
+            // 地区
+            $.get('http://community.cm/api/areas', {}, function (res) {
+                console.log(res);
+            })
+
+            // 图片上传
+            $('#file_upload').uploadify({
+                'formData': {
+                    'timestamp': "{{ time() }}",
+                    '_token': "{{csrf_token()}}"
+                },
+                'buttonText': '选择文件',
+                'swf': "{{ asset('resources/assets/uploadify/uploadify.swf') }}",
+                'uploader': "{{ url('admin/article/upload') }}",
+                'onUploadSuccess': function (file, data, responce) {
+                    $('#image_url').val(data);
+                    $('#image_view').attr('src', '/' + data);
+                }
+            });
+        }
+    })
+
     // 删除
     function Delete(id) {
         if(confirm('确定')) {
@@ -188,28 +261,5 @@
         var search_text = _this.parent('li').prev('li').find('input').val()
         window.location.href = "{{ url('admin/article/list') }}?search_text=" + search_text;
     }
-    $(function(){
-        if ($('#file_upload') != undefined) {
-            // 地区
-            $.get('http://community.cm/api/areas', {}, function (res) {
-                console.log(res);
-            })
-
-            // 图片上传
-            $('#file_upload').uploadify({
-                'formData': {
-                    'timestamp': "{{ time() }}",
-                    '_token': "{{csrf_token()}}"
-                },
-                'buttonText': '选择文件',
-                'swf': "{{ asset('resources/assets/uploadify/uploadify.swf') }}",
-                'uploader': "{{ url('admin/article/upload') }}",
-                'onUploadSuccess': function (file, data, responce) {
-                    $('#image_url').val(data);
-                    $('#image_view').attr('src', '/' + data);
-                }
-            });
-        }
-    })
 </script>
 </html>

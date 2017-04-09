@@ -21,12 +21,12 @@
 				<a href="{{ url('article').'/'.$collection->article_id }}">
 					<h3>
 						{{ $collection->article_title }}
-						<small>{{ $collection->created_at }}</small>
+						<small class="pull-right">{{ $collection->created_at }}</small>
 					</h3>
-					<p class="lead">
+					<p class="lead" style="max-height:60px;overflow:hidden;">
 						@if($collection->article_cover_url)
-							<img src="{{ asset($collection->article_cover_url) }}"
-								 style="max-height: 60px">
+							<img src="{{ asset($collection->article_cover_url) }}" class="pull-left" 
+								 style="max-height:60px;margin-right:10px">
 						@endif
 						{{ $collection->article_content }}
 					</p>
@@ -39,7 +39,7 @@
 
 	<section>
 		<h3 class="form-group">待办事务</h3>
-		<h4><a href="{{ url('user/affairs') }}">查看</a></h4>
+		<h4><a href="{{ url('user/affairs') }}">点击查看</a></h4>
 	</section>
 	
 </main>

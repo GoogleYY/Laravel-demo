@@ -5,7 +5,8 @@
 @section('search_none', 'visibility:hidden')
 
 @section('content')
-
+<div class="col-md-12">
+  <div class="card">
     <div class="header clearfix">
     	@if(count($errors)>0)
         <h4 class="title pull-left" style="color:#FF4201">
@@ -34,5 +35,6 @@
        		</div>
        	</form>
     </div>
-
+  </div>
+  </div>
 @endsection

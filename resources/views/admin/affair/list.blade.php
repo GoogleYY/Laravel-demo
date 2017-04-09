@@ -3,7 +3,8 @@
 @section('title', '事务列表')
 
 @section('content')
-
+<div class="col-md-12">
+        <div class="card">
   <div class="header clearfix">
       <h4 class="title pull-left">事务列表</h4>
   </div>
@@ -34,5 +35,6 @@
       </table>
       <div class="page_list">{{ $affairs->links() }}</div>
   </div>
-  
+  </div>
+  </div>
 @endsection

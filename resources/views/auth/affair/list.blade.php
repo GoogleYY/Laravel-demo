@@ -17,15 +17,19 @@
 					<small class="pull-right">{{ $affair->affair_updated_at }}</small>
 				</a>
 			</h4>
-			<p class="lead">
+			<p class="lead clearfix">
 				@if($affair->affair_status == 1)
-					草稿
+					<span class="pull-left">草稿 </span>
+					<button class="btn btn-success pull-right" onclick="affairCancel('{{ $affair->affair_id }}')" style="margin-left:15px">取消</button>
+					<button class="btn btn-warning pull-right" onclick="affairDelete('{{ $affair->affair_id }}')">删除</button>
 				@elseif($affair->affair_status == 2)
-					审核中
+					<span class="pull-left">审核中</span>
 				@elseif($affair->affair_status == 3)
-					已处理
+					<span class="pull-left">已处理</span>
+					<button class="btn btn-warning pull-right" onclick="affairDelete('{{ $affair->affair_id }}')">删除</button>
 				@else
-					已取消
+					<span class="pull-left">已取消</span>
+					<button class="btn btn-warning pull-right" onclick="affairDelete('{{ $affair->affair_id }}')">删除</button>
 				@endif
 			</p>
 		</div><hr>

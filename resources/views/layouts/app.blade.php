@@ -21,9 +21,9 @@
         ]); ?>
     </script>
 </head>
-<body>
+<body style="padding-top:70px">
     <div id="app">
-        <nav class="navbar navbar-default navbar-static-top">
+        <nav class="navbar navbar-default navbar-fixed-top">
             <div class="container">
                 <div class="navbar-header">
 
@@ -42,11 +42,6 @@
                 </div>
 
                 <div class="collapse navbar-collapse" id="app-navbar-collapse">
-                    <!-- Left Side Of Navbar -->
-                    <ul class="nav navbar-nav">
-                        &nbsp;
-                    </ul>
-
                     <!-- Right Side Of Navbar -->
                     <ul class="nav navbar-nav navbar-right">
                         <!-- Authentication Links -->
@@ -64,9 +59,6 @@
                                         <a href="{{ url('/user/info') }}">个人中心</a>
                                     </li>
                                     <li style="margin-top: 10px">
-                                        <a href="{{ url('user/affairs') }}">代办事项</a>
-                                    </li>
-                                    <li style="margin-top: 10px">
                                         <a href="{{ url('/password/reset').'/'.Auth::user()->remember_token }}">修改密码</a>
                                     </li>
                                     <li style="margin-top: 10px">
@@ -75,6 +67,9 @@
                                 </ul>
                             </li>
                         @endif
+                    </ul>
+                    <ul class="nav navbar-nav navbar-right">
+                        <li><a href="{{ url('user/affairs') }}">代办事务</a></li>
                     </ul>
                 </div>
             </div>
@@ -204,11 +199,11 @@
             }
         @endif
 
-        @if(!empty($isAffairCreateView) || !empty($isAffairEditView))
+        @if(!empty($isAffairCreateView) || !empty($isAffairDetailView) || !empty($isAffairEditView))
             // 保存事务
             var affair_id = null
-            @if(!empty($isAffairEditView))
-                // 事务编辑页
+            @if(!empty($isAffairEditView) || !empty($isAffairDetailView))
+                // 事务编辑/详情页
                 affair_id = '{{ $affair->affair_id }}'
             @endif
             
@@ -217,7 +212,7 @@
                 var affair_text = $('#affair_text').val()
 
                 if ((affair_title.length > 5) && (affair_text.length > 10)) {
-                    $.post("{{ url('user/affairs/save') }}", {
+                    $.post("{{ url('user/affair/save') }}", {
                         affair_id: affair_id,
                         affair_title: affair_title,
                         affair_text: affair_text,
@@ -240,7 +235,7 @@
                 var affair_title = $('#affair_title').val()
                 var affair_text = $('#affair_text').val()
                 if (affair_title.length > 5 && affair_text.length > 10) {
-                    $.post("{{ url('user/affairs/create') }}", {
+                    $.post("{{ url('user/affair/create') }}", {
                         affair_title: affair_title,
                         affair_text: affair_text,
                         _token: '{{ csrf_token() }}'
@@ -256,7 +251,42 @@
                     return false
                 }
             })
+
         @endif
+
+        // 取消事务
+        function affairCancel(affair_id) {
+            if(confirm('确定取消？')) {
+                $.post("{{ url('user/affair/cancel') }}", {
+                    affair_id: affair_id,
+                    _token: '{{ csrf_token() }}'
+                }, function (res) {
+                    console.log(res)
+                    if(res.code === 0) {
+                        window.location.href = "{{ url('user/affairs') }}"
+                    }
+                })
+            } else {
+                return false;
+            }
+        }
+
+        // 删除事务
+        function affairDelete(affair_id) {
+            if(confirm('确定删除？')) {
+                $.post("{{ url('user/affair/delete') }}", {
+                    affair_id: affair_id,
+                    _token: '{{ csrf_token() }}'
+                }, function (res) {
+                    console.log(res)
+                    if(res.code === 0) {
+                        window.location.href = "{{ url('user/affairs') }}"
+                    }
+                })
+            } else {
+                return false;
+            }
+        }
 
     </script>
 </body>

@@ -61,11 +61,13 @@ Route::group(['middleware' => ['auth']], function ($router) {
 	$router->get('user/affair/{id}', 'HomeController@affairDetailView');
 });
 // 取消
-$router->post('user/affairs/{id}/cancel', 'HomeController@affairCancel');
+$router->post('user/affair/cancel', 'HomeController@affairCancel');
 // 保存草稿
-$router->post('user/affairs/save', 'HomeController@affairCreateSave');
+$router->post('user/affair/save', 'HomeController@affairCreateSave');
 // 提交
-$router->post('user/affairs/create', 'HomeController@affairCreatePost');
+$router->post('user/affair/create', 'HomeController@affairCreatePost');
+// 删除
+$router->post('user/affair/delete', 'HomeController@affairDelete');
 
 /////////// 后台 ////////////////
 
@@ -90,6 +92,8 @@ Route::group(['prefix' => 'admin','namespace' => 'Admin'], function ($router) {
 		Route::group(['prefix' => 'article'], function ($router) {
 			// 列表
 			$router->get('list', 'DashboardController@articleList');
+			// 评论
+			$router->get('comments/{id}', 'DashboardController@articleComments');
 
 			// 创建
 			$router->get('create', 'DashboardController@articleCreateView');

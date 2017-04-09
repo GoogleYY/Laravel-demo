@@ -20,8 +20,13 @@ class DashboardController extends Controller
 
     public function index()
     {
-        // dd('后台首页，当前用户名：'.auth('admin')->user()->name);
-        return view('admin.index');
+        $articles = \DB::table('articles')
+            ->orderBy('article_view_counts', 'desc')
+            ->take(8)
+            ->get();
+        $isHome = true;
+
+        return view('admin.index', compact('articles', 'isHome'));
     }
 
     /***
@@ -45,9 +50,9 @@ class DashboardController extends Controller
 			     $articles = $sql
                  ->where('a.article_title', 'like', '%'.request()->search_text.'%')
                  ->orWhere('a.article_content', 'like', '%'.request()->search_text.'%')
-                 ->paginate(10);
+                 ->paginate(6);
             } else {
-                $articles = $sql->paginate(10);
+                $articles = $sql->paginate(6);
             }
 		} else {
 			// 按分类查看
@@ -55,6 +60,15 @@ class DashboardController extends Controller
 		}
 		
 		return view('admin.article.list', compact('articles', 'categorys'));
+    }
+
+    public function articleComments($id)
+    {
+        $comments = \DB::table('comments')
+            ->where('article_id', $id)
+            ->paginate(6);
+
+        return view('admin/article/comment/list', compact('comments'));
     }
 
     public function articleCreateView()
@@ -190,7 +204,7 @@ class DashboardController extends Controller
     public function categoryList()
     {
     	$categorys = \DB::table('categorys')
-			->paginate(10);
+			->paginate(6);
 
 		return view('admin.category.list', compact('categorys'));
     }
