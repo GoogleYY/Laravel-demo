@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Crypt;
 
+use Session;
+
 class LoginController extends Controller
 {
 
@@ -25,7 +27,8 @@ class LoginController extends Controller
                 return back()->with('msg', '用户名或密码错误');
             }
             session(['admin' => $user]);
-            return redirect('admin/dash');
+            return redirect(
+                session('requestUri') && strpos(session('requestUri'), 'admin/login') === false ? session('requestUri') : 'admin/dash');
         } else {
             return view('admin.login');
         }
@@ -33,7 +36,12 @@ class LoginController extends Controller
 
     public function logout()
     {
-        session(['admin' => null]);
+        Session::forget('admin');
+
+        if (!session('admin')) {
+            return back()->with('msg', '退出失败');
+        }
+
         return view('admin.login');
     }
 
@@ -45,17 +53,16 @@ class LoginController extends Controller
     public function passModifyPost()
     {
         if ($req = request()->all()) {
-            $rules = [
+
+            $validator = Validator::make($req, [
                 'password_old' => 'required',
                 'password' => 'required|between:6,20|confirmed',
-            ];
-            $message = [
-                'password_old.required' => '旧密码不能为空 !',
-                'password.required' => '新密码不能为空 !',
-                'password.between' => '新密码必须在6-20位之间 !',
-                'password.confirmed' => '两次输入的密码不匹配 !',
-            ];
-            $validator = Validator::make($req, $rules, $message);
+            ], [
+                'password_old.required' => '旧密码不能为空',
+                'password.required' => '新密码不能为空',
+                'password.between' => '新密码必须在6-20位之间',
+                'password.confirmed' => '两次输入的密码不匹配',
+            ]);
 
             if ($validator->fails()) {
                 return back()->withErrors($validator);
@@ -73,5 +80,5 @@ class LoginController extends Controller
             return view('admin.passmodify');
         }
     }
-    
+
 }

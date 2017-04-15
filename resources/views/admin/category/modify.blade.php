@@ -2,10 +2,11 @@
 
 @section('title', '编辑分类')
 
-@section('search_none', 'visibility:hidden')
+@section('search_none', 'display:none')
 
 @section('content')
-
+<div class="col-md-12">
+  <div class="card">
     <div class="header clearfix">
     	@if(count($errors)>0)
         <h4 class="title pull-left" style="color:#FF4201">
@@ -18,8 +19,11 @@
             @endif
         </h4>
         @else
-        <h4 class="title pull-left">分类编辑</h4>
+          <h4 class="title pull-left">分类编辑</h4>
         @endif
+        <button onclick="window.history.go(-1)" class="btn btn-default pull-right">
+            返回
+        </button>
     </div>
     <div class="content">
        	<form action="" method="POST">
@@ -34,5 +38,6 @@
        		</div>
        	</form>
     </div>
-
+    </div>
+</div>
 @endsection

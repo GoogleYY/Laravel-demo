@@ -17,8 +17,10 @@ class AdminLogin
     public function handle($request, Closure $next)
     {
         if(!session('admin')) {
+            session(['requestUri' => $request->getRequestUri()]);
             return redirect('admin/login');
         }
+
         return $next($request);
     }
 }

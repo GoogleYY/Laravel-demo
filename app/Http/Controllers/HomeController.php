@@ -14,56 +14,96 @@ use Illuminate\Http\Request;
 class HomeController extends Controller
 {
     /**
-     * Show the application dashboard.
+     * 前台控制器.
      *
      * @return \Illuminate\Http\Response
      */
+
+    function __construct()
+    {
+
+    }
+
     public function index()
     {
         return view('home');
     }
 
-    public function personal()
+    // 图片上传
+    public function imageUpload()
     {
-    	$user = auth()->user();
+    	$file = request()->file('Filedata');
 
-		$userInfo = [
-			'name' => $user->name,
-			'email' => $user->email,
-			'avatar' => $user->avatar,
-			'created_at' => $user->created_at
-		];
-
-		// 我的收藏
-		$collections = \DB::table('collections as a')
-			->where('a.user_id', $user->id)
-			->leftJoin('articles as b', 'b.article_id', 'a.article_id')
-			->get();
-
-		return view('auth.user', compact('userInfo', 'collections'));
+    	if($file -> isValid()) {
+            //$tmpName = $file->getRealPath(); //上传后临时文件的绝对路径
+            $extension =  $file->getClientOriginalExtension(); //文件后缀
+            $newName = date('YmdHis').'.'.$extension;
+            $file->move(base_path().'/resources/assets/img', $newName); //移动文件并重命名
+            $filePath = 'resources/assets/img/'.$newName;
+            return $filePath;
+        }
     }
 
     public function articleList()
     {
-    	$articles = \DB::table('articles as a')
+    	$sql = \DB::table('articles as a')
 			->join('categorys as b', 'b.category_id', '=', 'a.category_id')
 			->leftJoin('dict_provinces as c' ,'a.province_id', '=', 'c.province_id')
 			->leftJoin('dict_cities as d' ,'a.city_id', '=', 'd.city_id')
 			->leftJoin('dict_areas as e' ,'a.area_id', '=', 'e.area_id')
-			->orderBy('a.article_id', 'desc')
-			->paginate(10);
+			->orderBy('a.article_id', 'desc');
 
-		return view('home', compact('articles'));
+        $articles = null;
+
+        // $comments = [];
+        // foreach($sql->where('a.article_status', 1)->get() as $article) {
+        //     $comment = \DB::table('comments as a')
+        //         ->where('a.article_id', $article->article_id)
+        //         ->get();
+        //     array_push($comments, $comment);
+        // }
+        // // dd($comments);
+        $category_id = null;
+        if ($category_id = request()->category_id) {
+            // 按分类查看
+            $articles = $sql
+                ->where('a.article_status', 1)
+                ->where('a.category_id', $category_id)
+                ->paginate(10);
+        } elseif (!request()->search_text) {
+            // 全部
+            $articles = $sql
+                ->where('a.article_status', 1)
+                ->paginate(10);
+
+            // 主页
+            return view('home', compact('articles'));
+        }
+        // 搜索
+        if ($search_text = request()->search_text) {
+            $articles = $sql
+                ->where([
+                    ['a.article_status', 1],
+                    ['a.article_title', 'like', '%'.$search_text.'%']
+                ])
+                ->orWhere([
+                    ['a.article_status', 1],
+                    ['a.article_content', 'like', '%'.$search_text.'%']
+                ])->paginate(10);
+        }
+
+        // 其它情况 分类页
+		return view('articles', compact('articles', 'category_id'));
     }
 
     public function articleDetail($id)
     {
     	$sql = \DB::table('articles as a')->where('a.article_id', $id);
-		
+
 		if ($sql->first()) {
 			// 记录查看次数
 			$current_view_counts = $sql->first()->article_view_counts;
-		
+
 			$sql->update(['article_view_counts' => $current_view_counts + 1]);
 
 			$article = $sql
@@ -82,16 +122,26 @@ class HomeController extends Controller
 				->where('article_id', '>', $id)
 				->min('article_id');
 
-			// 是否收藏
-			$isCollected = null;
-			if (auth()->check()) {
-				$collection_id = \DB::table('collections')
-					->where([
-			    		['article_id', $id],
-						['user_id', auth()->user()->id],
-					])->first(['collection_id']);
-
+			// 更新查看评论时间
+			if(auth()->check()) {
+			\DB::table('comments')
+				->where([
+					['user_id', auth()->user()->id],
+					['article_id', $id]
+				])->update([
+					'comment_viewed_at' => Carbon::now()
+				]);
 			}
+            // 是否收藏
+            $isCollected = null;
+            $collection_id = null;
+            if (auth()->check()) {
+                $collection_id = \DB::table('collections')
+                    ->where([
+                        ['article_id', $id],
+                        ['user_id', auth()->user()->id],
+                    ])->first(['collection_id']);
+            }
 
 			$isCollected = $collection_id ? 1 : 0;
 
@@ -110,10 +160,14 @@ class HomeController extends Controller
 
     public function commentList($id)
     {
+        $field = 'comments.comment_updated_at';
+        if(request()->field == 'comment_created_at') {
+            $field = 'comments.comment_created_at';
+        }
     	$comments =  Comment::where('article_id', $id)
     		->rightJoin('users as b', 'b.id', '=', 'comments.user_id')
-    		->select('comments.*', 'b.name')
-    		->orderBy('comments.comment_created_at', 'desc')
+    		->select('comments.*', 'b.name', 'b.avatar')
+    		->orderBy($field, 'desc')
     		->get();
 		// $commentForwards = [];
 		foreach ($comments as $comment) {
@@ -137,19 +191,24 @@ class HomeController extends Controller
     	$req['user_id'] = auth()->user()->id;
     	$req['comment_created_at'] = Carbon::now();
     	$req['comment_updated_at'] = Carbon::now();
+    	$req['comment_viewed_at'] = Carbon::now();
 
     	$result = Comment::create($req);
 
-    	return $result ? [
-				'code' => 0,
-				'msg' => '评论成功'
-			] : [
-				'code' => -1,
-				'msg' => '评论失败'
-			];
+    	if ($result) {
+	    	$res = $req;
+            $res['name'] = auth()->user()->name;
+    		$res['avatar'] = auth()->user()->avatar;
+    		$res['comment_created_at'] = Carbon::now()->toDateTimeString();
+    		$res['comment_updated_at'] = Carbon::now()->toDateTimeString();
+    		$res['comment_viewed_at'] = Carbon::now()->toDateTimeString();
+    		return ['code' => 0, 'msg' => '评论成功', 'comment' => $res];
+    	} else {
+    		return ['code' => -1, 'msg' => '评论失败'];
+    	}
     }
 
-	// 回复评论 
+	// 回复评论
     public function commentForwardPost()
     {
     	$req = request()->except('_token');
@@ -160,16 +219,24 @@ class HomeController extends Controller
 
     	$result = CommentForward::create($req);
 
-    	return $result ? [
-				'code' => 0,
-				'msg' => '回复成功'
-			] : [
-				'code' => -1,
-				'msg' => '回复失败'
-			];
+    	if ($result) {
+            Comment::where('comment_id', $req['comment_id'])
+            ->update([
+                'comment_updated_at' => Carbon::now()
+            ]);
+
+	    	$res = $req;
+    		$res['name'] = auth()->user()->name;
+    		$res['forward_created_at'] = Carbon::now()->toDateTimeString();
+    		$res['forward_updated_at'] = Carbon::now()->toDateTimeString();
+
+    		return ['code' => 0, 'msg' => '回复成功', 'forward' => $res];
+    	} else {
+    		return ['code' => -1, 'msg' => '回复失败'];
+    	}
     }
 
-	// 文章收藏 
+	// 文章收藏
     public function articleCollect()
     {
     	$isCollected = Collection::where([
@@ -204,146 +271,6 @@ class HomeController extends Controller
 				'msg' => '取消失败'
 			];
 		}
-    }
-
-    // 事务 status: 
-    //	1.草稿 
-    //	2.申请中 
-    //	3.已处理 
-    //	4.已取消
-    //	5.已删除
-    public function affairList()
-    {
-    	$affairs = Affair::where('user_id', auth()->user()->id)
-    		->get();
-    	return view('auth.affair.list', compact('affairs'));
-    }
-
-    public function affairDetailView($id)
-    {
-    	$isAffairDetailView = true;
-
-    	$affair = Affair::where('affair_id', $id)->first();
-
-    	return view('auth.affair.detail', compact('affair', 'isAffairDetailView'));
-    }
-
-    // 取消 => status: 4.已取消
-    public function affairCancel()
-    {
-    	$result = Affair::where([
-    			['user_id', auth()->user()->id],
-    			['affair_id', request()->affair_id]
-    		])->update([
-    			'affair_status' => 4,
-    			'affair_updated_at' => Carbon::now()
-    		]);
-
-		return $result ? [
-			'code' => 0,
-			'msg' => '取消成功'
-		] : [
-			'code' => -1,
-			'msg' => '取消失败'
-		];
-    }
-
-    // 事务创建视图
-    public function affairCreateView()
-    {
-    	$isAffairCreateView = true;
-    	return view('auth.affair.create', compact('isAffairCreateView'));
-    }
-
-    public function affairEditView($id)
-    {
-    	$isAffairEditView = true;
-
-    	$affair = Affair::where([
-    		['user_id', auth()->user()->id],
-    		['affair_id', $id]
-		])->first();
-
-    	return view('auth.affair.edit', compact('isAffairEditView', 'affair'));
-    }
-
-    // 事务保存草稿 => status: 1.草稿
-    public function affairCreateSave()
-    {
-    	$req = request()->except('_token');
-
-    	$req['user_id'] = auth()->user()->id;
-    	$req['affair_status'] = 1;
-    	$req['affair_updated_at'] = Carbon::now();
-
-    	if (!request()->affair_id) {
-    		// 新建草稿
-    		$req['affair_created_at'] = Carbon::now();
-	    	$result = Affair::create($req);
-    	} else {
-    		// 更新草稿
-    		$result = Affair::where('affair_id', request()->affair_id)
-    			->update($req);
-    	}
-
-    	return $result ? [
-			'code' => 0,
-			'msg' => '保存成功'
-		] : [
-			'code' => -1,
-			'msg' => '保存失败'
-		];
-    }
-
-    // 事务提交 => status: 2.申请中
-    public function affairCreatePost()
-    {
-    	if (!request()->affair_id) { 
-    		// 直接提交
-    		$req = request()->except('_token');
-
-	    	$req['user_id'] = auth()->user()->id;
-	    	$req['affair_status'] = 2;
-	    	$req['affair_created_at'] = Carbon::now();
-	    	$req['affair_updated_at'] = Carbon::now();
-
-	    	$result = Affair::create($req);
-    	} else {
-    		// 从草稿提交
-    		$result = Affair::where('affair_id', request()->affair_id)
-    			->update([
-    				'affair_status' => 2
-				]);
-    	}
-
-    	return $result ? [
-			'code' => 0,
-			'msg' => '提交成功'
-		] : [
-			'code' => -1,
-			'msg' => '提交失败'
-		];
-    }
-
-    // 事务删除 => status: 5.已删除
-    public function affairDelete()
-    {
-    	$result = Affair::where([
-    			['user_id', auth()->user()->id],
-    			['affair_id', request()->affair_id]
-    		])->update([
-    			'affair_status' => 5,
-    			'affair_updated_at' => Carbon::now(),
-    			'affair_deleted_at' => Carbon::now()
-    		]);
-
-		return $result ? [
-			'code' => 0,
-			'msg' => '删除成功'
-		] : [
-			'code' => -1,
-			'msg' => '删除失败'
-		];
     }
 
 }

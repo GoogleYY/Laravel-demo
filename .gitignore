@@ -4,6 +4,7 @@
 /vendor
 /uploads
 /.idea
+/.phpintel
 Homestead.json
 Homestead.yaml
 .env

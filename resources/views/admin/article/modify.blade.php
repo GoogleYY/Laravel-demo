@@ -19,6 +19,9 @@
         @else
             <h4 class="title pull-left">编辑创建</h4>
         @endif
+        <button onclick="window.history.go(-1)" class="btn btn-default pull-right">
+            返回
+        </button>
     </div>
     <div class="content">
         <form action="" method="POST" class="row">
@@ -77,7 +80,9 @@
 
             <div class="form-group col-md-12">
                 <label>内容</label>
-                <textarea rows="10" name="article_content" value="{{ $article->article_content }}" class="form-control"></textarea>
+                <textarea rows="10" name="article_content" class="form-control">
+                    {{ $article->article_content }}
+                </textarea>
             </div>
 
             <div class="form-group col-md-12">

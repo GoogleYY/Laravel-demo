@@ -3341,26 +3341,6 @@ body > .navbar-collapse[data-color="purple"]:after {
   }
 }
 
-.uploadify {
-    margin-bottom: 0;
-    text-align: center;
-    border: 1px solid #E3E3E3 !important;
-    border-radius: 2px;
-    transition: all 100ms ease-in;
-    height: 40px !important;
-    box-sizing: border-box;
-}
-
-.uploadify-button {
-    line-height: 40px !important;
-    height: 40px !important;
-    width: 100px !important;
-    border-radius: 2px;
-}
-
-.uploadify-button-text {
-    margin: 0 !important;
-}
 
 /* 分页 */
 

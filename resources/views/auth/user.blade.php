@@ -1,47 +1,71 @@
-@extends('layouts.app')
+@extends('layouts.common')
 
 @section('title', '个人中心')
 
 @section('content')
 
-<main class="container">
-	<section class="text-center">
-		<img src="{{ asset($userInfo['avatar']) }}">
-		<h1>{{ $userInfo['name'] }}</h1>
-		<h3>{{ $userInfo['email'] }}</h3>
-		<p>{{ $userInfo['created_at'] }}</p>
-	</section>
+<main class="container main-container ">
+    <div class="users-show row">
+        <aside class="col-md-3 side-bar">
+          	<widget class="box text-center">
+          		<div class="panel panel-default corner-radius">
+		            <div class="panel-body text-center topic-author-box">
+		                <a href="#">
+		                  <img src="{{ asset(Auth::user()->avatar) }}" style="width:80px; height:80px;margin:5px;" class="img-thumbnail avatar">
+		                </a>
+		                <div class="text-center" style="padding:3px">
+	                        <i class="fa fa-mars" style="font-weight:700;color:#47A4FF" aria-hidden="true"></i>
+		                </div>
+		                <span class="text-white">
+		                    <p class="lead"> {{ Auth::user()->name }} </p>
+		                    <p> {{ Auth::user()->email }} </p>
+		                    <hr>
+		                    <p>注册于 {{ Auth::user()->created_at->diffForHumans() }} </p>
+							<a class="btn btn-default btn-block" href="{{ url('user/modify') }}"
+							   id="user-edit-button">
+					         	<i class="fa fa-edit"></i> 编辑个人资料
+					         </a>
+		                </span>
+		            </div>
+		        </div>
+          	</widget>
 
-	<hr>
+            <widget class="box text-center">
+             	<div class="padding-sm user-basic-nav">
+               		<ul class="list-group">
+             			<li class="list-group-item">
+                			<a href="{{ url('user/comments') }}">
+                  				<i class="text-md fa fa-volume-up"></i>
+                  				未读评论回复
+                			</a>
+          				</li>
+             			<li class="list-group-item">
+                			<a href="{{ url('user/collections') }}" class="">
+                  				<i class="text-md fa fa-headphones"></i>
+                  				我收藏的文章
+                			</a>
+          				</li>
+                 		<li class="list-group-item">
+                			<a href="{{ url('user/affairs') }}" class="">
+                  				<i class="text-md fa fa-list-ul"></i>
+                  				我申请的事务
+                			</a>
+                  		</li>
+                 		<li class="list-group-item">
+            				<a href="{{ url('user/forwards') }}" class="">
+                  				<i class="text-md fa fa-comment"></i>
+                  				我发表的回复
+                			</a>
+                  		</li>
+              		</ul>
+            	</div>
+          	</widget>
+      	</aside>
 
-	<section>
-		<h3>我的收藏</h3>
-		@foreach($collections as $collection)
-			<div>
-				<a href="{{ url('article').'/'.$collection->article_id }}">
-					<h3>
-						{{ $collection->article_title }}
-						<small class="pull-right">{{ $collection->created_at }}</small>
-					</h3>
-					<p class="lead" style="max-height:60px;overflow:hidden;">
-						@if($collection->article_cover_url)
-							<img src="{{ asset($collection->article_cover_url) }}" class="pull-left" 
-								 style="max-height:60px;margin-right:10px">
-						@endif
-						{{ $collection->article_content }}
-					</p>
-				</a>
-			</div>
-		@endforeach
-	</section>
-
-	<hr>
-
-	<section>
-		<h3 class="form-group">待办事务</h3>
-		<h4><a href="{{ url('user/affairs') }}">点击查看</a></h4>
-	</section>
-	
+      	<section class="main-col col-md-9 left-col">
+        	@yield('info')
+    	</section>
+  	</div>
 </main>
 
 @endsection

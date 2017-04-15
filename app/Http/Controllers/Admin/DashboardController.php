@@ -20,13 +20,21 @@ class DashboardController extends Controller
 
     public function index()
     {
-        $articles = \DB::table('articles')
-            ->orderBy('article_view_counts', 'desc')
-            ->take(8)
-            ->get();
+        $sql = \DB::table('articles as a')
+            ->orderBy('article_view_counts', 'desc');
+
+        $categorys = \DB::table('categorys')->get();
+
+        if(!request()->category_id) {
+            $articles = $sql->take(8)->get();
+        } else {
+            $articles = $sql->where('a.category_id', request()->category_id)
+                ->take(8)->get();
+        }
+
         $isHome = true;
 
-        return view('admin.index', compact('articles', 'isHome'));
+        return view('admin.index', compact('articles', 'categorys' ,'isHome'));
     }
 
     /***
@@ -40,8 +48,7 @@ class DashboardController extends Controller
 
 		$articles = null;
 
-		$categorys = \DB::table('categorys')
-			->get();
+		$categorys = \DB::table('categorys')->get();
 
 		if(!request()->category_id) {
 			// 默认显示全部分类
@@ -58,7 +65,7 @@ class DashboardController extends Controller
 			// 按分类查看
 			$articles = $sql->where('a.category_id', request()->category_id)->paginate(10);
 		}
-		
+
 		return view('admin.article.list', compact('articles', 'categorys'));
     }
 
@@ -71,26 +78,31 @@ class DashboardController extends Controller
         return view('admin/article/comment/list', compact('comments'));
     }
 
+    public function commentDelete()
+    {
+        $comment = \DB::table('comments')
+            ->where('comment_id', request()->id)
+            ->delete();
+
+        $forwards = \DB::table('comment_forwards')
+            ->where('comment_id', request()->id)
+            ->delete();
+
+        return $comment && $forwards ? [
+            'code' => 0,
+            'msg' => '删除成功'
+        ] : [
+            'code' => -1,
+            'msg' => '删除失败'
+        ];
+    }
+
     public function articleCreateView()
     {
     	$categorys = \DB::table('categorys')
 				->get();
 
 		return view('admin.article.create', compact('categorys'));
-    }
-
-    public function imageUpload()
-    {
-    	$file = request()->file('Filedata');
-
-    	if($file -> isValid()) {
-            //$tmpName = $file->getRealPath(); //上传后临时文件的绝对路径
-            $extension =  $file->getClientOriginalExtension(); //文件后缀
-            $newName = date('YmdHis').'.'.$extension;
-            $file->move(base_path().'/resources/assets/img', $newName); //移动文件并重命名
-            $filePath = 'resources/assets/img/'.$newName;
-            return $filePath;
-        }
     }
 
     public function articleCreatePost()
@@ -128,15 +140,15 @@ class DashboardController extends Controller
     {
     	$categorys = \DB::table('categorys')
 			->get();
-		$areas = \DB::table('areas')
-			->get();
+		// $areas = \DB::table('areas')
+		// 	->get();
 
 		$article = \DB::table('articles')
 			->where('article_id', $id)
 			->first();
 
 		if ($article) {
-			return view('admin.article.modify', compact('categorys', 'areas', 'article'));
+			return view('admin.article.modify', compact('article', 'categorys'));
 		} else {
 			abort(404);
 		}
@@ -157,12 +169,12 @@ class DashboardController extends Controller
         }
     }
 
-    public function articleDelete($id)
+    public function articleDelete()
     {
     	$article = \DB::table('articles')
-			->where('article_id', $id)
+			->where('article_id', request()->id)
 			->update([
-				'article_status' => 0
+				'article_status' => 2
 			]);
 
 		return $article ? [
@@ -175,10 +187,16 @@ class DashboardController extends Controller
     }
 
     // 事务管理
+    // 事务 status:
+    //  1.草稿
+    //  2.申请中
+    //  3.已处理
+    //  4.已取消
+    //  5.已删除
     public function affairList()
     {
         $affairs = \DB::table('affairs')
-            ->whereNotIn('affair_status', [1, 4]) // 排除草稿
+            ->whereNotIn('affair_status', [1, 4, 5]) // 排除草稿
             ->paginate(10);
 
         return view('admin.affair.list', compact('affairs'));
@@ -195,7 +213,18 @@ class DashboardController extends Controller
 
     public function affairHandlePost()
     {
+        $result = \DB::table('affairs')
+            ->where('affair_id', request()->affair_id)
+            ->update([
+                'affair_status' => '3',
+                'affair_updated_at' => Carbon::now()
+            ]);
 
+        return $result ? [
+            'code' => 0, 'msg' => '处理成功'
+        ] : [
+            'code' => -1, 'msg' => '处理失败'
+        ];
     }
 
     /***
@@ -203,8 +232,14 @@ class DashboardController extends Controller
      */
     public function categoryList()
     {
-    	$categorys = \DB::table('categorys')
-			->paginate(6);
+    	$categorys = \DB::table('categorys')->get();
+
+        foreach ($categorys as $category) {
+            $article = \DB::table('articles')
+                ->where('articles.category_id', $category->category_id)
+                ->get();
+            $category->article_count = count($article);
+        }
 
 		return view('admin.category.list', compact('categorys'));
     }
@@ -248,11 +283,11 @@ class DashboardController extends Controller
 
     public function categoryModifyPut($id)
     {
-    	$input = request()->except('_token', '_method');
+    	$res = request()->except('_token', '_method');
 
 		$result = \DB::table('categorys')
 			->where('category_id', $id)
-			->update($input);
+			->update($res);
 
         if ($result) {
             return redirect('admin/article/index');
@@ -265,7 +300,7 @@ class DashboardController extends Controller
     {
     	$article = \DB::table('articles')
 			->where('category_id', request()->id)
-			->get();
+			->first();
 
 		if (!$article) {
 			$result = \DB::table('categorys')

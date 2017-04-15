@@ -2,7 +2,7 @@
 
 @section('title', '添加分类')
 
-@section('search_none', 'visibility:hidden')
+@section('search_none', 'display:none')
 
 @section('content')
 <div class="col-md-12">

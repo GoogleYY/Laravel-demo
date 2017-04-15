@@ -2,6 +2,8 @@
 
 @section('title', '事务列表')
 
+@section('search_none', 'display:none')
+
 @section('content')
 <div class="col-md-12">
         <div class="card">
@@ -25,9 +27,13 @@
                  <td>{{ $affair->affair_status == 2 ? '待处理' : '已处理' }}</td>
                  <td>{{ $affair->affair_created_at }}</td>
                  <td>
-                     <a href="{{ url('admin/affair/hiddle').'/'.$affair->affair_id }}" class="btn btn-info">
+                    @if($affair->affair_status == 2)
+                        <a onclick="handleAffair('{{ $affair->affair_id }}')" class="btn btn-info">
                          处理
-                     </a>
+                        </a>
+                    @else
+                        <button class="btn btn-default" disabled="">已处理</button>
+                    @endif
                  </td>
              </tr>
              @endforeach

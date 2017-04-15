@@ -1,17 +1,17 @@
-@extends('layouts.app')
+@extends('auth.user')
 
-@section('title', '编辑事务')
+@section('info')
 
-@section('content')
-
-<main class="container">
-	<div class="form-group text-center">
-		<h2>编辑事务</h2>
+<div class="panel panel-default">
+	<div class="panel-heading">
+		事务编辑
 	</div>
-	<p class="text-center">
+	<section class="panel-body">
+
+		<p class="text-center">
 		上次编辑 {{ $affair->affair_updated_at }}
-	</p><hr>
-	<section>
+		</p><hr>
+		<section>
 		<div class="form-group">
 			<label>标题</label>
 			<input type="text" id="affair_title" value="{{ $affair->affair_title }}" class="form-control">
@@ -20,7 +20,7 @@
 			<label>详情</label>
 			<textarea id="affair_text" class="form-control" rows="8">
 				{{ $affair->affair_text }}
-			</textarea> 
+			</textarea>
 		</div>
 		<div class="form-group clearfix">
 			<div class="pull-right" style="word-spacing:15px">
@@ -31,7 +31,7 @@
 			</div>
 		</div>
 	</section>
-	
-</main>
+	</section>
+</div>
 
 @endsection

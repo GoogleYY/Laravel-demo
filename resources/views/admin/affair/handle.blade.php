@@ -2,6 +2,8 @@
 
 @section('title', '事务详情')
 
+@section('search_none', 'display:none')
+
 @section('content')
 <div class="col-md-12">
     <div class="card">

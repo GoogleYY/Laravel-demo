@@ -17,11 +17,11 @@
                 @endif
             </h4>
         @else
-            <h4 class="title pull-left">文章创建</h4>
+            <h4 class="title pull-left">添加文章</h4>
         @endif
     </div>
     <div class="content">
-        <form action="" method="POST" class="row">
+        <form action="" method="POST" class="clearfix">
             {{ csrf_field() }}
             <div class="form-group col-md-6">
                 <label>标题</label>
@@ -45,40 +45,35 @@
 
             <div class="form-group col-md-2">
                 <label>省</label>
-                <select class="form-control" name="province_id">
-                    <option value="1">广东省</option>
-                </select>
+                <select class="form-control" name="province_id" id="province"></select>
             </div>
             <div class="form-group col-md-2">
                 <label>市</label>
-                <select class="form-control" name="city_id">
-                    <option value="1">深圳市</option>
-                </select>
+                <select class="form-control" name="city_id" id="city"></select>
             </div>
             <div class="form-group col-md-2">
                 <label>区</label>
-                <select class="form-control" name="area_id">
-                    <option value="1">南山区</option>
-                </select>
+                <select class="form-control" name="area_id" id="area"></select>
             </div>
 
             <div class="form-group col-md-2">
                 <label>封面</label>
-                <input type="file" id="file_upload" class="form-control">
+                <div id="file_upload" class="form-control"></div>
             </div>
             <div class="form-group col-md-10">
                 <label>封面url</label>
                 <input type="text" id="image_url" name="article_cover_url" class="form-control">
             </div>
+
             <div class="form-group col-md-12">
                 <img id="image_view" src="" style="max-height: 300px">
             </div>
 
             <div class="form-group col-md-12">
                 <label>内容</label>
-                <textarea rows="10" name="article_content" class="form-control"></textarea>
+                <textarea rows="10" id="editor" name="article_content" class="form-control"></textarea>
             </div>
-
+            <hr>
             <div class="form-group col-md-12">
                 <button type="submit" class="btn btn-info pull-right">提交</button>
             </div>

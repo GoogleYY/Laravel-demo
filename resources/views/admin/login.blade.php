@@ -11,7 +11,7 @@
 <body>
 	<header>
 		<nav class="navbar navbar-default">
-			<div class="container-fluid">
+			<div class="container">
 				<!-- Brand and toggle get grouped for better mobile display -->
 				<div class="navbar-header">
 					<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
@@ -26,7 +26,7 @@
 				<!-- Collect the nav links, forms, and other content for toggling -->
 				<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
 					<ul class="nav navbar-nav navbar-right">
-						<li><a href="#">登入</a></li>
+						<li><a href="#" class="navbar-brand">登入</a></li>
 					</ul>
 				</div><!-- /.navbar-collapse -->
 			</div><!-- /.container-fluid -->
@@ -44,7 +44,7 @@
                 	<div class="panel-heading">登入</div>
 	            @endif
 					<div class="panel-body">
-						<form class="form-horizontal text-center" role="form" method="POST" 
+						<form class="form-horizontal text-center" role="form" method="POST"
 						action="">
 							<input type="hidden" name="_token" value="{{ csrf_token() }}">
 

@@ -10,12 +10,23 @@
 | contains the "web" middleware group. Now create something great!
 |
 */
+// test
+
+Route::get('/index', function () {
+	return view('index');
+});
+
 
 /////////// 前台 /////////////
 
-Route::get('/', function () {
-	// \View::addExtension('html', 'php');
-    return view('welcome');
+Route::get('/', 'HomeController@articleList');
+
+Route::get('/weng', function () {
+    $weng = \DB::table('categorys')->get();
+
+    $articles = \DB::table('articles')->get();
+
+    return view('weng.index', compact('weng', 'articles'));
 });
 
 // 登入
@@ -32,42 +43,61 @@ Route::group(['prefix' => 'article'], function ($router) {
 
 	// 评论列表
 	$router->get('/comments/{id}', 'HomeController@commentList');
-
+	// 提交
 	$router->post('/comment', 'HomeController@commentPost');
-
+	// 回复
 	$router->post('/comment/forward', 'HomeController@commentForwardPost');
 });
 
 // 已登入路由组
 Route::group(['middleware' => ['auth']], function ($router) {
 	// $router->get('/home', 'HomeController@index');
+	// 未读消息
 
-	// 用户个人中心
-	$router->get('user/info', 'HomeController@personal');
+	Route::group(['prefix' => 'user'], function ($router) {
+		// 未读消息
+		$router->get('unread/comments', 'UserController@unreadComments');
+		// 用户个人中心
+		$router->get('personal', 'UserController@collectionList');
+		// 修改个人资料
+		$router->get('modify', 'UserController@modifyMyInfo');
+		$router->post('modify', 'UserController@modifyMyInfoPost');
+		// 未读评论
+		$router->get('comments', 'UserController@unreadComments');
+		// 回复
+		$router->get('forwards', 'UserController@forwardList');
+		// 收藏
+		$router->get('collections', 'UserController@collectionList');
+		// 事务列表
+		$router->get('affairs', 'UserController@affairList');
+		// 事务添加
+		$router->get('affair/create', 'UserController@affairCreateView');
+		// 事务编辑
+		$router->get('affair/edit/{id}', 'UserController@affairEditView');
+		// 事务详情
+		$router->get('affair/{id}', 'UserController@affairDetailView');
+		// 取消
+		$router->post('affair/cancel', 'UserController@affairCancel');
+		// 保存草稿
+		$router->post('affair/save', 'UserController@affairCreateSave');
+		// 提交
+		$router->post('affair/create', 'UserController@affairCreatePost');
+		// 删除
+		$router->post('affair/delete', 'UserController@affairDelete');
+
+	});
 
 	// 文章收藏
 	$router->match(['post', 'delete'], 'api/article/collect', 'HomeController@articleCollect');
 
-	// 文章评论
+	// 文章评论跳转
 	$router->get('article/comment/{id}', 'HomeController@commentRedirect');
 
-	// 事务
-	$router->get('user/affairs', 'HomeController@affairList');
-
-	$router->get('user/affair/create', 'HomeController@affairCreateView');
-
-	$router->get('user/affair/edit/{id}', 'HomeController@affairEditView');
-
-	$router->get('user/affair/{id}', 'HomeController@affairDetailView');
 });
-// 取消
-$router->post('user/affair/cancel', 'HomeController@affairCancel');
-// 保存草稿
-$router->post('user/affair/save', 'HomeController@affairCreateSave');
-// 提交
-$router->post('user/affair/create', 'HomeController@affairCreatePost');
-// 删除
-$router->post('user/affair/delete', 'HomeController@affairDelete');
+
+
+// 上传图片
+Route::any('upload', 'HomeController@imageUpload');
 
 /////////// 后台 ////////////////
 
@@ -77,7 +107,7 @@ Route::group(['prefix' => 'admin','namespace' => 'Admin'], function ($router) {
 	Route::get('login', 'LoginController@loginView');
 	Route::post('login', 'LoginController@loginPost');
 
-	// 已登入路由组 
+	// 已登入路由组
 	Route::group(['middleware' => ['logined']], function ($router) {
 		// 退出
 		Route::get('logout', 'LoginController@logout');
@@ -94,45 +124,42 @@ Route::group(['prefix' => 'admin','namespace' => 'Admin'], function ($router) {
 			$router->get('list', 'DashboardController@articleList');
 			// 评论
 			$router->get('comments/{id}', 'DashboardController@articleComments');
-
 			// 创建
 			$router->get('create', 'DashboardController@articleCreateView');
-			// 上传图片
-			$router->any('upload', 'DashboardController@imageUpload');
+			// 提交
 			$router->post('create', 'DashboardController@articleCreatePost');
-
 			// 修改
 			$router->get('modify/{id}', 'DashboardController@articleModifyView');
-			$router->put('modify/{id}', 'DashboardController@articleModifyPost');
-
+			// 提交
+			$router->post('modify/{id}', 'DashboardController@articleModifyPost');
 			// 删除
-			$router->post('delete/{id}', 'DashboardController@articleDelete');
+			$router->post('delete', 'DashboardController@articleDelete');
 		});
 
-		// 事物管理
+		// 评论管理
+		// 删除
+		$router->delete('comment/delete', 'DashboardController@commentDelete');
+
+		// 事务管理
 		Route::group(['prefix' => 'affair'], function ($router) {
-			// 事务列表
+			// 列表
 			Route::get('list', 'DashboardController@affairList');
-
-			// 处理视图
-			Route::get('hiddle/{id}', 'DashboardController@affairHandleView');
-
-			Route::post('hiddle/{id}', 'DashboardController@affairHandlePost');
+			// 处理
+			Route::post('handle', 'DashboardController@affairHandlePost');
 		});
 
 		// 分类管理
 		Route::group(['prefix' => 'category'], function ($router) {
 			// 分类列表
 			Route::get('list', 'DashboardController@categoryList');
-
 			// 分类添加
 			Route::get('create', 'DashboardController@categoryCreateView');
+			// 提交
 			Route::post('create', 'DashboardController@categoryCreatePost');
-
 			// 分类修改
 			Route::get('modify/{id}', 'DashboardController@categoryModifyView');
+			// 提交
 			Route::put('modify/{id}', 'DashboardController@categoryModifyPut');
-
 			// 分类删除
 			Route::delete('delete', 'DashboardController@categoryDelete');
 		});

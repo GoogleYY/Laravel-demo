@@ -36,18 +36,18 @@
 	<main class="container text-center">
 		<div class="row">
 			<div class="col-md-8 col-md-offset-2">
-	            @if(count($errors)>0)
-				<div class="panel panel-warning">
-					<div class="panel-heading">
-						@if(is_object($errors))
-	                        @foreach($errors->all() as $error)
-	                            {{$error}}
-	                        @endforeach
-	                    @else
-	                        {{$errors}}
-	                    @endif
-					</div>
-	            @else
+	            @if(count($errors) > 0)
+					<div class="panel panel-warning">
+						<div class="panel-heading">
+							@if(is_object($errors))
+		                        @foreach($errors->all() as $error)
+		                            {{$error}}
+		                        @endforeach
+		                    @else
+		                        {{$errors}}
+		                    @endif
+						</div>
+		            @else
 				<div class="panel panel-default">
                 	<div class="panel-heading">修改密码</div>
 	            @endif
