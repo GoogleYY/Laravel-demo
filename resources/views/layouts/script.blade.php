@@ -1,6 +1,7 @@
 <script src="{{ asset('resources/assets/js/jquery.min.js') }}"></script>
 <script src="{{ asset('resources/assets/js/bootstrap.min.js') }}"></script>
-<script src="{{ asset('resources/assets/js/bootstrap-switch.js') }}"></script>
+{{-- <script src="{{ asset('resources/assets/js/bootstrap-switch.js') }}"></script> --}}
+<script src="{{ asset('resources/assets/js/wangEditor.min.js') }}"></script>
 <script src="{{ asset('resources/assets/uploadify/jquery.uploadify.min.js') }}"></script>
 <script src="{{ asset('resources/assets/js/simplemde.min.js') }}"></script>
 <script src="{{ asset('resources/assets/js/masonry.min.js') }}"></script>
@@ -8,8 +9,100 @@
 <script src="{{ asset('resources/assets/js/layer.js') }}"></script>
 
 <script type="text/javascript">
+    // 提问页
+    @if(!empty($isQuestionView))
+        // 上传封面
+        imageUpload('您可以选择一张图片帮助完善您的问题')
+        //editor
+        var editor = new wangEditor('editor');
+        editor.config.menus = [
+            'bold', 'underline', 'strikethrough', 'forecolor', 'quote', 'fontsize', 'head',
+            'unorderlist', 'orderlist', 'alignleft', 'aligncenter', 'alignright','link', 'emotion'
+        ];
+        editor.create();
+        // 地区
+        $.get("{{ url('api/areas') }}", function (res) {
+            console.log(res)
+            $.each(res.provinces, function (i, province) {
+                var option = `
+                    <option value="${ province.province_id }">
+                        ${ province.province_name }
+                    </option`
+                $('#province').append(option)
+            })
+
+            $("#province").change(function () {
+                var selValue = $(this).val()
+                $("#city option:gt(0)").remove()
+
+                $.each(res.cities, function (i, city) {
+                    if (city.province_id == selValue) {
+                        var option = `
+                            <option value="${ city.city_id }">
+                                ${ city.city_name }
+                            </option`
+                        $("#city").append(option);
+                    }
+                })
+            })
+
+            $("#city").change(function () {
+                var selValue = $(this).val()
+                $("#area option:gt(0)").remove()
+
+                $.each(res.areas, function (i, area) {
+                    if (area.city_id == selValue) {
+                        var option = `
+                            <option value="${ area.area_id }">
+                                ${ area.area_name }
+                            </option`
+                        $("#area").append(option);
+                    }
+                })
+            })
+        })
+        // 提交问题
+        $('#quest_submit').click(function () {
+            var article_title = $('input[name=article_title]').val()
+            var article_cover_url = $('input[name=article_cover_url]').val()
+            var province_id = $('#province').val()
+            var city_id = $('#city').val()
+            var area_id = $('#area').val()
+            var article_content = editor.$txt.formatText()
+            if(article_title.length > 5 && article_content.length >10) {
+                $.post("{{ url('user/quest') }}", {
+                    _token: '{{ csrf_token() }}',
+                    article_title: article_title,
+                    article_cover_url: article_cover_url,
+                    province_id: province_id,
+                    city_id: city_id,
+                    area_id: area_id,
+                    article_content: article_content
+                }, function (res) {
+                    console.log(res)
+                    layer.msg(res.msg, {offset: '200px'})
+                    if(res.code === 0) {
+                        window.location.href = "{{ url('article?category_id=10') }}"
+                    }
+                })
+            } else {
+                layer.msg('字数太少啦', {icon: 5, offset: '200px'})
+                return false
+            }
+        })
+    @endif
+
+    // 文章详情页
     @if(!empty($isArticleDetail))
-        $(function(){
+
+        @if(!empty($scrollComment))
+            // 从未读消息跳转，滚到评论区
+            setTimeout(function(){
+                document.getElementById('comment_container').scrollIntoView(true)
+            }, 0)
+        @endif
+
+        $(function() {
             // 收藏
             var state = parseInt('{{ $isCollected }}');
 
@@ -23,7 +116,7 @@
                         }, function (res) {
                             layer.msg(res.msg, {offset: '200px'})
                             if (res.code === 0) {
-                                _this.html('收藏')
+                                _this.html('<i class="fa fa-heart-o"></i> 收藏')
                             }
                         })
                     } else {
@@ -34,7 +127,7 @@
                         }, function (res) {
                             layer.msg(res.msg, {offset: '200px'})
                             if (res.code === 0) {
-                                _this.html('已收藏')
+                                _this.html('<i class="fa fa-heart"></i> 已收藏')
                             }
                         })
                     }
@@ -62,17 +155,19 @@
                             var html = `
                                 <div class="media">
                                     <div class="media-left">
-                                        <img class="media-object" src="{{ url('${comment.avatar}') }}"
-                                             style="width:50px"/>
+                                        <img class="media-object" src="{{ url('${comment.avatar}') }}"/>
                                     </div>
                                     <div class="media-body" style="width:100%">
                                         <h4 style="display:flex;align-items:center;justify-content:space-between">
                                             #${lis.length + 1}楼 &nbsp; ${ comment.name }
-                                            <small>${ comment.comment_created_at }</small>
+                                            <small>${ dateDiff(comment.comment_created_at) }</small>
                                         </h4>
-                                        <p class="lead"> ${ comment.comment_text } </p>
+                                        <p class="lead">
+                                            ${ comment.comment_text }
+                                            <small class="btn-link pull-right" onclick="showInput($(this))">回复</small>
+                                        </p>
                                     </div>
-                                    <div class="input-group">
+                                    <div class="input-group input-forward" style="display:none">
                                         <input type="hidden" value="${ comment.comment_id }">
                                         <input type="text" class="form-control" placeholder="回复评论">
                                         <span class="input-group-btn">
@@ -106,17 +201,19 @@
                 for(var i = 0; i < res.length; i++) {
                     html += `<div class="media">
                         <div class="media-left">
-                            <img class="media-object" src="{{ url('${res[i].avatar}') }}"
-                                 style="width:50px"/>
+                            <img class="media-object" src="{{ url('${res[i].avatar}') }}"/>
                         </div>
                         <div class="media-body" style="width:100%">
                             <h4 style="display:flex;align-items:center;justify-content:space-between">
                                 #${res.length - i}楼 &nbsp; ${ res[i].name }
-                                <small>${ res[i].comment_created_at }</small>
+                                <small>${ dateDiff(res[i].comment_created_at) }</small>
                             </h4>
-                            <p class="lead"> ${ res[i].comment_text } </p>
+                            <p class="lead">
+                                ${ res[i].comment_text }
+                                <small class="btn-link pull-right" onclick="showInput($(this))">回复</small>
+                            </p>
                         </div>
-                        <div class="input-group">
+                        <div class="input-group input-forward" style="display:none">
                             @if(Auth::check())
                                 <input type="text" class="form-control" placeholder="回复评论">
                                 <span class="input-group-btn">
@@ -139,7 +236,7 @@
                             <blockquote class="lead" style="margin:0;font-size:14px"> ${ forwards[j].forward_text } </blockquote>
                             <h4 class="pull-right" style="margin:0">
                                 <small style="margin-right:10px"> ${ forwards[j].name } </small>
-                                <small> ${ forwards[j].forward_created_at } </small>
+                                <small> ${ dateDiff(forwards[j].forward_created_at) } </small>
                             </h4>`
                     }
 
@@ -167,7 +264,7 @@
                             <blockquote class="lead" style="margin:0;font-size:14px"> ${ forwards.forward_text } </blockquote>
                             <h4 class="pull-right" style="margin:0">
                                 <small style="margin-right:10px"> ${ forwards.name } </small>
-                                <small> ${ forwards.forward_created_at } </small>
+                                <small> ${ dateDiff(forwards.forward_created_at) } </small>
                             </h4>`
                         _this.parent('span').parent('div').next('.forward-list').prepend(html)
                     }
@@ -179,8 +276,14 @@
         }
     @endif
 
-    // 未读消息
+    // 显示回复框
+    function showInput(_this){
+        $('.input-forward').hide()
+        _this.parent().parent().next('div').show().find('input').focus()
+    }
+
     $(function() {
+        // 未读消息
         @if(Auth::check())
             $.get("{{ url('user/unread/comments') }}", function (res) {
                 console.log(res)
@@ -189,14 +292,21 @@
                 }
             })
         @endif
+        @if(!empty($isModifyInfoView))
+            imageUpload('更改头像')
+        @endif
+    })
+
+    function imageUpload(text) {
         // 图片上传
-        if($('#file_upload') != undefined) {
+        if($('#file_upload') != undefined && $('.user-avatar') != undefined) {
             $('#file_upload').uploadify({
                 'formData': {
                     'timestamp': "{{ time() }}",
                     '_token': "{{csrf_token()}}"
                 },
-                'buttonText': '更改头像',
+                fileExt: '*.jpg;*.png;*.gif',
+                'buttonText': text,
                 'swf': "{{ asset('resources/assets/uploadify/uploadify.swf') }}",
                 'uploader': "{{ url('upload') }}",
                 'onUploadSuccess': function (file, data, responce) {
@@ -205,7 +315,7 @@
                 }
             })
         }
-    })
+    }
 
     // 事物创建页 || 事物详情页 || 事务编辑页
     @if(!empty($isAffairCreateView) || !empty($isAffairDetailView) || !empty($isAffairEditView))
@@ -315,6 +425,36 @@
             })
             layer.close(index);
         })
+    }
+
+    // 时间格式化
+    function dateDiff(_hisTime){
+        var now = new Date().getTime(),
+            hisTime = Date.parse(_hisTime),
+            diffValue = now - hisTime,
+            result='',
+            minute = 1000 * 60,
+            hour = minute * 60,
+            day = hour * 24,
+            halfamonth = day * 15,
+            month = day * 30,
+            year = month * 12,
+
+            _year = diffValue/year,
+            _month =diffValue/month,
+            _week =diffValue/(7*day),
+            _day =diffValue/day,
+            _hour =diffValue/hour,
+            _min =diffValue/minute;
+
+        if(_year>=1) result=parseInt(_year) + "年前";
+        else if(_month>=1) result=parseInt(_month) + "个月前";
+        else if(_week>=1) result=parseInt(_week) + "周前";
+        else if(_day>=1) result=parseInt(_day) +"天前";
+        else if(_hour>=1) result=parseInt(_hour) +"小时前";
+        else if(_min>=1) result=parseInt(_min) +"分钟前";
+        else result="刚刚";
+        return result;
     }
 
 </script>

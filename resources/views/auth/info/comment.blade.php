@@ -11,7 +11,8 @@
             @foreach($unreadComments as $comment)
 				<div class="form-group">
 					<h4>
-						<a href="{{ url('user/affair').'/'.$affair->affair_id }}">
+						<a href="{{ url('article').'/'.$comment->article_id.'?redirect=comments' }}"
+						   class="btn-link btn-block">
 							{{ $comment->comment_text }}
 							<small class="pull-right">
 								@if(($dur = time() - strtotime($comment->comment_updated_at)) >= 0)

@@ -14,7 +14,7 @@
             @foreach($collections as $article)
                 <div class="form-group">
                     <h4>
-                        <a href="{{ url('article').'/'.$article->article_id }}">
+                        <a href="{{ url('article').'/'.$article->article_id }}" class="btn-link btn-block">
                           {{ $article->article_title }}
                           <small class="pull-right">
                               最近更新

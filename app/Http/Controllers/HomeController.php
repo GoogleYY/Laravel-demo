@@ -132,6 +132,9 @@ class HomeController extends Controller
 					'comment_viewed_at' => Carbon::now()
 				]);
 			}
+
+            $scrollComment = request()->redirect == 'comments' ? true : false;
+
             // 是否收藏
             $isCollected = null;
             $collection_id = null;
@@ -147,7 +150,9 @@ class HomeController extends Controller
 
 			$isArticleDetail = true;
 
-			return view('article', compact('article', 'prev_id', 'next_id', 'isCollected', 'isArticleDetail'));
+			return view('article',
+                compact('article', 'prev_id', 'next_id', 'isCollected', 'isArticleDetail', 'scrollComment')
+            );
 		} else {
 			abort(404);
 		}

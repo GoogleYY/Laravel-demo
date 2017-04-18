@@ -10,7 +10,7 @@
             @foreach($affairs as $affair)
 				<div class="form-group">
 					<h4>
-						<a href="{{ url('user/affair').'/'.$affair->affair_id }}">
+						<a href="{{ url('user/affair').'/'.$affair->affair_id }}" class="btn-link btn-block">
 							{{ $affair->affair_title }}
 							<small class="pull-right">
 								@if(($dur = time() - strtotime($affair->affair_updated_at)) >= 0)

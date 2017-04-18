@@ -5,7 +5,7 @@
 @section('content')
 
 <main class="container main-container ">
-    <div class="users-show row">
+    <div class="users-show">
         <aside class="col-md-3 side-bar">
           	<widget class="box text-center">
           		<div class="panel panel-default corner-radius">
@@ -14,7 +14,13 @@
 		                  <img src="{{ asset(Auth::user()->avatar) }}" style="width:80px; height:80px;margin:5px;" class="img-thumbnail avatar">
 		                </a>
 		                <div class="text-center" style="padding:3px">
-	                        <i class="fa fa-mars" style="font-weight:700;color:#47A4FF" aria-hidden="true"></i>
+                            @if(Auth::user()->sex == 1) {{-- 男 --}}
+                                <i class="fa fa-mars" style="font-weight:700;color:#47A4FF"></i>
+                            @elseif(Auth::user()->sex == 2) {{-- 女 --}}
+                                <i class="fa fa-venus" style="font-weight:700;color:pink"></i>
+                            @else {{-- 0v0 --}}
+                                <i class="fa fa-transgender" style="font-weight:700;color:#666"></i>
+                            @endif
 		                </div>
 		                <span class="text-white">
 		                    <p class="lead"> {{ Auth::user()->name }} </p>
@@ -34,25 +40,25 @@
              	<div class="padding-sm user-basic-nav">
                		<ul class="list-group">
              			<li class="list-group-item">
-                			<a href="{{ url('user/comments') }}">
+                			<a href="{{ url('user/comments') }}" class="btn">
                   				<i class="text-md fa fa-volume-up"></i>
                   				未读评论回复
                 			</a>
           				</li>
              			<li class="list-group-item">
-                			<a href="{{ url('user/collections') }}" class="">
+                			<a href="{{ url('user/collections') }}" class="btn">
                   				<i class="text-md fa fa-headphones"></i>
                   				我收藏的文章
                 			</a>
           				</li>
                  		<li class="list-group-item">
-                			<a href="{{ url('user/affairs') }}" class="">
+                			<a href="{{ url('user/affairs') }}" class="btn">
                   				<i class="text-md fa fa-list-ul"></i>
                   				我申请的事务
                 			</a>
                   		</li>
                  		<li class="list-group-item">
-            				<a href="{{ url('user/forwards') }}" class="">
+            				<a href="{{ url('user/forwards') }}" class="btn">
                   				<i class="text-md fa fa-comment"></i>
                   				我发表的回复
                 			</a>

@@ -29,17 +29,24 @@
         <div class="form-group text-center">
             <h4>性别</h4>
             <label class="checkbox-inline">
-                <input type="radio" name="sex" id="optionsRadios3" value="0" checked>
+                <input type="radio" name="sex" id="optionsRadios4" value="0"
+                       @if(Auth::user()->sex == 0)checked @endif>
+                <i class="fa fa-transgender" style="font-size:16px;font-weight:700;color:#666"></i>
+            </label>
+            <label class="checkbox-inline">
+                <input type="radio" name="sex" id="optionsRadios3" value="1"
+                       @if(Auth::user()->sex == 1)checked @endif>
                 <i class="fa fa-mars" style="font-size:14px;font-weight:700;color:#47A4FF"></i>
             </label>
             <label class="checkbox-inline">
-                <input type="radio" name="sex" id="optionsRadios4" value="1">
+                <input type="radio" name="sex" id="optionsRadios4" value="2"
+                       @if(Auth::user()->sex == 2)checked @endif>
                 <i class="fa fa-venus" style="font-size:16px;font-weight:700;color:pink"></i>
             </label>
         </div>
         <hr style="border-color:transparent">
-		<div class="form-group text-center">
-            <span class="btn btn-default" id="file_upload" style="cursor:pointer;">
+		<div class="form-group text-center user-avatar">
+            <span class="btn btn-default" id="file_upload">
                 选择文件
             </span>
             <input type="hidden" class="form-control" name="avatar" value="{{ Auth::user()->avatar }}"

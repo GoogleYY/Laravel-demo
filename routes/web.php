@@ -63,7 +63,7 @@ Route::group(['middleware' => ['auth']], function ($router) {
 		$router->get('modify', 'UserController@modifyMyInfo');
 		$router->post('modify', 'UserController@modifyMyInfoPost');
 		// 未读评论
-		$router->get('comments', 'UserController@unreadComments');
+		$router->get('comments', 'UserController@userComments');
 		// 回复
 		$router->get('forwards', 'UserController@forwardList');
 		// 收藏
@@ -84,6 +84,10 @@ Route::group(['middleware' => ['auth']], function ($router) {
 		$router->post('affair/create', 'UserController@affairCreatePost');
 		// 删除
 		$router->post('affair/delete', 'UserController@affairDelete');
+
+		// 提问
+		$router->get('quest', 'UserController@questView');
+		$router->post('quest', 'UserController@questPost');
 
 	});
 

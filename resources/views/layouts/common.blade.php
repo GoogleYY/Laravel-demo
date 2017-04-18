@@ -6,16 +6,15 @@
     <title>@yield('title')</title>
     {{-- <link rel="stylesheet" href="{{ asset('resources/assets/css/style.css') }}"> --}}
     <link rel="stylesheet" href="{{ asset('resources/assets/css/bootstrap.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('resources/assets/css/bootstrap-switch.css') }}">
-    <link rel="stylesheet" href="{{ asset('resources/assets/css/bootstrap-switch.css') }}">
+    <link rel="stylesheet" href="{{ asset('resources/assets/css/wangEditor.min.css') }}">
+    {{-- <link rel="stylesheet" href="{{ asset('resources/assets/css/bootstrap-switch.css') }}"> --}}
     <link rel="stylesheet" href="{{ asset('resources/assets/css/font-awesome.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('resources/assets/css/markdown.css') }}">
-    <link rel="stylesheet" href="{{ asset('resources/assets/css/prism.css') }}">
-    <link rel="stylesheet" href="{{ asset('resources/assets/css/share.css') }}">
+    {{-- <link rel="stylesheet" href="{{ asset('resources/assets/css/prism.css') }}"> --}}
+    {{-- <link rel="stylesheet" href="{{ asset('resources/assets/css/share.css') }}"> --}}
     <link rel="stylesheet" href="{{ asset('resources/assets/css/main.css') }}">
     @include('layouts.style')
 </head>
-<body class="home-page" style="background:#E9EAED;padding-top:80px">
+<body>
 
     <header class="navbar navbar-inverse navbar-fixed-top" role="navigation">
         <div class="container">
@@ -70,6 +69,11 @@
                             <li title="登入">
                                 <a href="{{ url('login') }}" style="padding:12px">
                                     登入
+                                </a>
+                            </li>
+                            <li title="注册">
+                                <a href="{{ url('register') }}" style="padding:12px">
+                                    注册
                                 </a>
                             </li>
                         @endif

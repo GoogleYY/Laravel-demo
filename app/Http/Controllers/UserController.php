@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Carbon\Carbon;
 
 use App\Models\User;
+use App\Models\Article;
 use App\Models\Collection;
 use App\Models\Comment;
 use App\Models\CommentForward;
@@ -30,7 +31,8 @@ class UserController extends Controller
 
     public function modifyMyInfo()
     {
-        return view('auth.info.modify');
+        $isModifyInfoView = true;
+        return view('auth.info.modify', compact('isModifyInfoView'));
     }
 
     public function modifyMyInfoPost()
@@ -68,16 +70,15 @@ class UserController extends Controller
                 array_push($unreadComments, $comment);
             }
         }
-        return view('auth.info.comment', compact('unreadComments'));
+        // return view('auth.info.comment', compact('unreadComments'));
+        return $unreadComments;
     }
 
 	public function userComments()
     {
         $unreadComments = (array)$this->unreadComments();
-        if (count($unreadComments) == 0) {
-            $unreadComments = 0;
-        }
-        return view('auth.info.comment', 'unreadComments');
+
+        return view('auth.info.comment', compact('unreadComments'));
     }
 
     public function forwardList()
@@ -99,9 +100,50 @@ class UserController extends Controller
 		$collections = \DB::table('collections as a')
 			->where('a.user_id', auth()->user()->id)
 			->rightJoin('articles as b', 'b.article_id', '=', 'a.article_id')
+            ->orderBy('a.updated_at', 'desc')
 			->get();
 
     	return view('auth.info.collection', compact('collections'));
+    }
+
+    // 提问
+    public function questView()
+    {
+        $isQuestionView = true;
+        return view('auth.quest', compact('isQuestionView'));
+    }
+
+    public function questPost()
+    {
+        $req = request()->except('_token');
+        $req['article_author'] = auth()->user()->name;
+        $req['category_id'] = 10;
+        $req['article_created_at'] = Carbon::now();
+        $req['article_updated_at'] = Carbon::now();
+
+        $validator = Validator::make($req, [
+            'article_title' => 'required|min:6',
+            'article_content' => 'required|min:10'
+        ], [
+            'article_title.required' => '标题不能为空',
+            'article_title.min' => '标题字数太少',
+            'article_content.required' => '内容不能为空',
+            'article_content.min' => '多写点吧'
+        ]);
+
+        if ($validator->fails()) {
+            return $validator;
+        }
+
+        $result = Article::create($req);
+
+        return $result ? [
+            'code' => 0,
+            'msg' => '问题发表成功'
+        ] : [
+            'code' => -1,
+            'msg' => '出错了'
+        ];
     }
 
     // 事务 status:

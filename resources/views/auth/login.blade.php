@@ -9,6 +9,11 @@
                 <div class="panel-body">
                     <form class="form-horizontal" role="form" method="POST" action="{{ url('/login') }}">
                         {{ csrf_field() }}
+                        <div class="form-group">
+                            <a class="col-md-offset-4 btn btn-link" href="{{ url('register') }}">
+                                还没有账号 ?
+                            </a>
+                        </div>
 
                         <div class="form-group{{ $errors->has('email') ? ' has-error' : '' }}">
                             <label for="email" class="col-md-4 control-label">邮箱</label>

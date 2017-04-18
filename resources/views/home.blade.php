@@ -8,7 +8,7 @@
 
     <div class="container">
 
-        <div class="row add-top">
+        <div>
             <article class="col-md-9 pic-block big-block">
                 <a class="shodow-box" href="{{ url('article').'/'.$articles[2]->article_id }}">
                     <img class="img-responsive" src="{{ $articles[2]->article_cover_url }}">
@@ -40,7 +40,7 @@
             </article>
         </div>
 
-        <div class="row add-top add-subscribe">
+        <div class="add-subscribe clearfix">
             <div class="col-md-6 pic-block">
                 <div class="shodow-box">
                     <div class="subscribe-box">
@@ -87,7 +87,7 @@
             @endforeach
         </div>
 
-        <div class="row add-top-half  home-list">
+        <div class="add-top-half  home-list">
 
             <div class="block-header">
                 <h2>

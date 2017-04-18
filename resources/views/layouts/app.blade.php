@@ -13,7 +13,7 @@
     <!-- Styles -->
     <!-- <link href="/css/app.css" rel="stylesheet"> -->
     <link rel="stylesheet" href="{{ asset('resources/assets/css/bootstrap.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('resources/assets/css/bootstrap-switch.css') }}">
+    {{-- <link rel="stylesheet" href="{{ asset('resources/assets/css/bootstrap-switch.css') }}"> --}}
     <link rel="stylesheet" href="{{ asset('resources/assets/css/animate.min.css') }}">
     <link rel="stylesheet" href="{{ asset('resources/assets/css/markdown.css') }}">
     <link rel="stylesheet" href="{{ asset('resources/assets/css/prism.css') }}">
@@ -28,7 +28,7 @@
     </script>
 </head>
 <body>
-    <div id="app" style="padding-top:70px">
+    <div id="app" style="padding-top:100px">
         <nav class="navbar navbar-inverse navbar-fixed-top">
             <div class="container">
                 <div class="navbar-header">
@@ -56,7 +56,7 @@
                             <li><a href="{{ url('/register') }}">注册</a></li>
                         @else
                             <li>
-                                <a href="{{ url('user/personal') }}" id="hasUnreadMsg" 
+                                <a href="{{ url('user/personal') }}" id="hasUnreadMsg"
                                    class="glyphicon glyphicon-comment" style="display:none;color:#428BCA">
                                     你有新的评论回复
                                 </a>
@@ -90,7 +90,7 @@
     <!-- Scripts -->
     <script src="{{ asset('resources/assets/js/jquery.min.js') }}"></script>
     <script src="{{ asset('resources/assets/js/bootstrap.min.js') }}"></script>
-    <script src="{{ asset('resources/assets/js/bootstrap-switch.js') }}"></script>
+    {{-- <script src="{{ asset('resources/assets/js/bootstrap-switch.js') }}"></script> --}}
     <script src="{{ asset('resources/assets/js/simplemde.min.js') }}"></script>
     <script src="{{ asset('resources/assets/js/masonry.min.js') }}"></script>
     <script src="{{ asset('resources/assets/js/prism.js') }}"></script>

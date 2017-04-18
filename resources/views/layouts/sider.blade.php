@@ -7,16 +7,22 @@
                   <img src="{{ asset(Auth::user()->avatar) }}" style="width:80px; height:80px;margin:5px;" class="img-thumbnail avatar">
                 </a>
                 <div class="text-center" style="padding:3px">
-                    <i class="fa fa-mars" style="font-weight:700;color:#47A4FF" aria-hidden="true"></i>
+                    @if(Auth::user()->sex == 1) {{-- 男 --}}
+                        <i class="fa fa-mars" style="font-weight:700;color:#47A4FF"></i>
+                    @elseif(Auth::user()->sex == 2) {{-- 女 --}}
+                        <i class="fa fa-venus" style="font-weight:700;color:pink"></i>
+                    @else {{-- 0v0 --}}
+                        <i class="fa fa-transgender" style="font-weight:700;color:#666"></i>
+                    @endif
                 </div>
                 <span class="text-white">
                     <hr>
                     <a class="btn btn-default btn-block" id="hasUnreadMsg"
-                       href="{{ url('user/forward') }}" style="cursor:pointer;display:none;color:#47A4FF">
+                       href="{{ url('user/comments') }}" style="cursor:pointer;display:none;color:#47A4FF">
                         有新的回复了
                     </a>
                     <a class="btn btn-warning btn-block" href="{{ url('user/personal') }}">
-                        <i class="fa fa-plus"></i>
+                        <i class="fa fa-user"></i>
                         个人中心
                     </a>
                 </span>
@@ -54,12 +60,14 @@
                 </div>
                 <div class="panel-body">
                     <ul class="list list-group ">
-                        <li class="list-group-item ">
-                            <a href="" class="no-pjax">
-                                <img class="media-object inline-block" src="">
-                                //////////////////////////////////////////////
-                            </a>
-                        </li>
+                        @foreach (DB::table('articles')->where('category_id', 11)->get() as $article)
+                            <li class="list-group-item ">
+                                <a href="{{ url('article').'/'.$article->article_id }}"
+                                   class="no-pjax btn-link">
+                                    {{ $article->article_title }}
+                                </a>
+                            </li>
+                        @endforeach
                     </ul>
                 </div>
             </div>
